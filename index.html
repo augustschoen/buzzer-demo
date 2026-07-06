@@ -76,6 +76,16 @@ input{font:inherit;color:inherit}
 #feed{height:212px;overflow-y:auto;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);margin-bottom:22px;scrollbar-width:none}
 #feed::-webkit-scrollbar{display:none}
 
+/* ---------- deine einsätze ---------- */
+#mybets-wrap{margin-bottom:22px}
+#mybets{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+#mybets::-webkit-scrollbar{display:none}
+.mybet{flex:none;border:1px solid rgba(79,169,124,.55);padding:9px 13px;cursor:pointer;display:flex;align-items:baseline;gap:9px}
+.mybet .s{font-weight:900;font-size:15px}
+.mybet .p{font-weight:900;font-size:12.5px;color:var(--gold);font-variant-numeric:tabular-nums}
+.mybet .c{font-size:11.5px;color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mybet .c.hot{color:var(--red)}
+
 /* ---------- grid ---------- */
 #grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 @media(min-width:760px){#grid{grid-template-columns:1fr 1fr 1fr}}
@@ -104,8 +114,8 @@ input{font:inherit;color:inherit}
 .fe b{font-weight:800}
 .fe .txt{color:var(--muted)}
 .fe .amt{font-weight:900;font-variant-numeric:tabular-nums;color:var(--gold);white-space:nowrap}
-.fe .amt.big{font-size:15px}
-.fe .tag{font-size:10px;font-weight:800;color:var(--violet);white-space:nowrap}
+.fe .amt.big{font-size:16.5px;color:var(--green)}
+.fe.winrow{font-size:14.5px}
 .fe.sys{color:var(--muted2);font-size:12px;justify-content:center}
 .fe.sys .fe-time{display:none}
 .fe.me b{color:var(--violet)}
@@ -150,7 +160,10 @@ input{font:inherit;color:inherit}
 .pp-note{font-size:11px;color:var(--muted2);margin-top:6px;line-height:1.5}
 #d-chatbox{margin-top:22px}
 #d-chat{max-height:38vh;overflow-y:auto}
-#d-chatrow{display:flex;gap:8px;margin-top:12px}
+#view-detail.on{padding-bottom:calc(100px + var(--sab))}
+#d-chatrow{position:fixed;left:0;right:0;bottom:0;z-index:40;max-width:520px;margin:0 auto;
+  display:flex;gap:8px;padding:10px 14px calc(12px + var(--sab));
+  background:var(--bg);border-top:1px solid var(--line2)}
 #d-chatrow input{flex:1;background:var(--bg);border:1px solid var(--line);padding:11px 14px;font-size:14px;outline:none;color:var(--text)}
 #d-chatrow input:focus{border-color:var(--violet-dim)}
 #d-chatrow button{width:44px;border:1px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:var(--violet)}
@@ -192,7 +205,7 @@ input{font:inherit;color:inherit}
 /* ---------- round overlay ---------- */
 #ov{position:fixed;inset:0;z-index:90;display:none;flex-direction:column;align-items:center;justify-content:center;background:#000;touch-action:manipulation}
 #ov.on{display:flex}
-#ov.go-bg{background:#B23641}
+#ov.go-bg{background:#2E8557}
 #ov .ov-eyebrow{font-size:11px;font-weight:800;letter-spacing:2.6px;color:var(--muted);text-transform:uppercase}
 #ov .ov-pot{font-size:44px;font-weight:900;color:var(--gold);font-variant-numeric:tabular-nums;letter-spacing:-1.5px;margin:8px 0 2px}
 #ov .ov-players{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:4vh}
@@ -286,6 +299,10 @@ input{font:inherit;color:inherit}
     <section id="view-home" class="view on">
       <div class="eyebrow"><span class="dot"></span> Next up</div>
       <div id="hero"></div>
+      <div id="mybets-wrap" class="hidden">
+        <div class="eyebrow">Deine Einsätze</div>
+        <div id="mybets"></div>
+      </div>
       <div class="eyebrow"><span class="dot"></span> Live — alle Einsätze</div>
       <div id="feed" class="feed"></div>
       <div class="eyebrow">Alle Buzzer</div>
@@ -462,13 +479,14 @@ function msgNode(m,ctx){ // ctx: "feed" | "chat"
   const el=document.createElement("div");
   let cls="fe",html="";
   const time='<span class="fe-time">'+clock(m.t)+"</span>";
-  const tag=(ctx==="feed"&&m.i!=null)?' <span class="tag">'+fmtStakeShort(STAKES[m.i])+"€</span>":"";
   if(m.type==="join"){
     const extra=m.extra>0?' <span class="txt">und '+m.extra+" weitere</span>":"";
-    html=time+"<span><b>"+esc(m.name)+'</b> <span class="txt">ist drin</span>'+extra+' <span class="amt">+'+fmtEUR(m.amt)+"</span>"+tag+"</span>";
+    html=time+"<span><b>"+esc(m.name)+'</b> <span class="txt">ist drin</span>'+extra+' <span class="amt">+'+fmtEUR(m.amt)+"</span></span>";
   }else if(m.type==="win"){
-    html=time+"<span>🏆 <b>"+esc(m.name)+'</b> <span class="txt">holt</span> <span class="amt big">'+fmtEUR(m.amt)+"</span>"+tag+
-      (m.ms?' <span class="txt">('+fmtMs(m.ms)+")</span>":"")+"</span>";
+    cls+=" winrow";
+    const pot=(ctx==="feed"&&m.i!=null)?' <span class="txt">· '+fmtStakeShort(STAKES[m.i])+"€-Pot</span>":"";
+    const ms=(ctx==="chat"&&m.ms)?' <span class="txt">('+fmtMs(m.ms)+")</span>":"";
+    html=time+"<span>🏆 <b>"+esc(m.name)+'</b> <span class="txt">holt</span> <span class="amt big">'+fmtEUR(m.amt)+"</span>"+pot+ms+"</span>";
   }else if(m.type==="sys"){
     cls+=" sys"; html="<span>"+m.text+"</span>";
   }else if(m.type==="hype"){
@@ -688,6 +706,22 @@ function navigate(v,arg){
 }
 $("#btn-profile").addEventListener("click",()=>navigate(currentView==="profile"?"home":"profile"));
 
+/* Wischen in der Detail-Ansicht: links/rechts = nächster/voriger Buzzer */
+let swX=null,swY=null;
+views.detail.addEventListener("touchstart",e=>{
+  if(e.target.closest("#d-chatrow")){swX=null;return;}
+  const p=e.touches[0]; swX=p.clientX; swY=p.clientY;
+},{passive:true});
+views.detail.addEventListener("touchend",e=>{
+  if(swX===null)return;
+  const p=e.changedTouches[0]; const dx=p.clientX-swX, dy=p.clientY-swY; swX=null;
+  if(engaged||currentView!=="detail"||currentDetail==null)return;
+  if(Math.abs(dx)>60&&Math.abs(dx)>2.2*Math.abs(dy)){
+    const ni=currentDetail+(dx<0?1:-1);
+    if(ni>=0&&ni<N)navigate("detail",ni);
+  }
+},{passive:true});
+
 /* ---------- Home ---------- */
 const gridEl=$("#grid"),heroEl=$("#hero");
 const cardRefs=[];
@@ -709,12 +743,12 @@ function renderGrid(){
   }
 }
 function heroPick(t){
+  // Nur Buzzer zeigen, bei denen man noch einsteigen kann — sobald zu, rückt der nächste Pot nach
   let best=null,bestD=Infinity;
   for(let i=0;i<N;i++){
     const T=times(i,t);
-    let d=T.tGo-t;
-    if(d<-3200)d=T.tGo+period()-t; // Runde vorbei → nächste
-    if(d<bestD){bestD=d;best={i,T,d};}
+    const d=(T.phase==="open")?T.tGo-t:T.tGo+period()-t;
+    if(d<bestD){bestD=d;best={i,d};}
   }
   return best;
 }
@@ -766,6 +800,38 @@ function updateHome(t){
     }
     if(S.bets[Ti.key]&&!S.bets[Ti.key].done){ r.card.style.borderColor="rgba(79,169,124,.7)"; }
     else r.card.style.borderColor="";
+  }
+  updateMyBets(t);
+}
+
+/* ---------- Deine Einsätze (Startseite) ---------- */
+let myBetsSig="";
+function updateMyBets(t){
+  const wrap=$("#mybets-wrap"),row=$("#mybets"); if(!wrap||!row)return;
+  const act=[];
+  for(const key of Object.keys(S.bets)){
+    const b=S.bets[key]; if(b.done)continue;
+    const [i,c]=key.split(":").map(Number); if(!(i>=0&&i<N))continue;
+    const T=times(i,t); if(T.key!==key)continue;
+    act.push({i,T});
+  }
+  act.sort((a,b)=>a.T.tGo-b.T.tGo);
+  const sig=act.map(a=>a.T.key).join(",");
+  if(sig!==myBetsSig){
+    myBetsSig=sig;
+    wrap.classList.toggle("hidden",act.length===0);
+    row.innerHTML="";
+    for(const a of act){
+      const el=document.createElement("div"); el.className="mybet";
+      el.innerHTML='<span class="s">'+fmtStakeShort(STAKES[a.i])+' €</span><span class="p" data-p="'+a.T.key+'">–</span><span class="c" data-c="'+a.T.key+'">–</span>';
+      el.addEventListener("click",()=>navigate("detail",a.i));
+      row.appendChild(el);
+    }
+  }
+  for(const a of act){
+    const p=row.querySelector('[data-p="'+a.T.key+'"]'),c=row.querySelector('[data-c="'+a.T.key+'"]');
+    if(p)p.textContent=fmtEUR(potOf(a.i,a.T,t));
+    if(c){ const d=a.T.tGo-t; c.textContent="GO in "+mmss(d); c.classList.toggle("hot",d<15000); }
   }
 }
 
