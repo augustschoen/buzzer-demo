@@ -59,18 +59,20 @@ input{font:inherit;color:inherit}
 .eyebrow .dot{width:6px;height:6px;background:var(--red);animation:blink 1.6s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* ---------- hero ---------- */
-#hero{border:1px solid var(--line);padding:18px 18px 16px;margin-bottom:22px;cursor:pointer;background:var(--bg)}
-#hero.hot{border-color:var(--red)}
-#hero .h-row{display:flex;justify-content:space-between;align-items:flex-start}
-#hero .h-stake{font-size:42px;font-weight:900;letter-spacing:-1.5px;line-height:1}
-#hero .h-stake small{font-size:18px;font-weight:800;color:var(--muted)}
-#hero .h-count{font-size:38px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-1px;line-height:1;text-align:right;color:var(--violet)}
-#hero .h-count.soon{color:var(--red)}
-#hero .h-sub{display:flex;justify-content:space-between;align-items:flex-end;margin-top:14px}
-#hero .h-pot{font-size:14px;color:var(--muted);font-weight:600}
-#hero .h-pot b{color:var(--gold);font-size:18px;font-weight:900;font-variant-numeric:tabular-nums}
-#hero .h-cta{font-size:12px;font-weight:800;letter-spacing:1px;color:#fff;background:var(--violet-dim);padding:9px 15px}
+/* ---------- hero (Next up oben + Noch-offen unten) ---------- */
+.hero{border:1px solid var(--line);padding:18px 18px 16px;margin-bottom:22px;cursor:pointer;background:var(--bg)}
+.hero.hot{border-color:var(--red)}
+#hero2.hot{border-color:var(--green)}
+.hero .h-row{display:flex;justify-content:space-between;align-items:flex-start}
+.hero .h-stake{font-size:42px;font-weight:900;letter-spacing:-1.5px;line-height:1}
+.hero .h-stake small{font-size:18px;font-weight:800;color:var(--muted)}
+.hero .h-count{font-size:38px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-1px;line-height:1;text-align:right;color:var(--violet)}
+.hero .h-count.soon{color:var(--red)}
+#hero2 .h-count.soon{color:var(--green)}
+.hero .h-sub{display:flex;justify-content:space-between;align-items:flex-end;margin-top:14px}
+.hero .h-pot{font-size:14px;color:var(--muted);font-weight:600}
+.hero .h-pot b{color:var(--gold);font-size:18px;font-weight:900;font-variant-numeric:tabular-nums}
+.hero .h-cta{font-size:12px;font-weight:800;letter-spacing:1px;color:#fff;background:var(--violet-dim);padding:9px 15px}
 
 /* ---------- live feed (auf der Startseite) ---------- */
 #feed{height:212px;overflow-y:auto;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);margin-bottom:22px;scrollbar-width:none}
@@ -183,6 +185,15 @@ input{font:inherit;color:inherit}
 .switch.on::after{left:21px;background:#fff}
 .danger{color:var(--red)}
 .p-foot{color:var(--muted2);font-size:11px;line-height:1.6;padding:18px 2px}
+.lb{border-top:1px solid var(--line2);margin-bottom:8px}
+.lb-row{display:flex;align-items:baseline;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line2);font-size:13.5px}
+.lb-row .rk{width:20px;flex:none;font-weight:900;color:var(--muted2);font-variant-numeric:tabular-nums}
+.lb-row.top .rk{color:var(--gold)}
+.lb-row .nm{flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-row .val{font-weight:900;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lb-row .val.gold{color:var(--gold)}
+.lb-row .sub{font-size:11px;color:var(--muted2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lb-row.me{background:#0D0B12;border-left:2px solid var(--violet-dim);padding-left:8px;border-radius:0}
 
 /* ---------- sheet ---------- */
 .dim{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:60;opacity:0;pointer-events:none;transition:.2s}
@@ -298,13 +309,15 @@ input{font:inherit;color:inherit}
   <main id="main">
     <section id="view-home" class="view on">
       <div class="eyebrow"><span class="dot"></span> Next up</div>
-      <div id="hero"></div>
+      <div id="hero" class="hero"></div>
       <div id="mybets-wrap" class="hidden">
         <div class="eyebrow">Deine Einsätze</div>
         <div id="mybets"></div>
       </div>
       <div class="eyebrow"><span class="dot"></span> Live — alle Einsätze</div>
       <div id="feed" class="feed"></div>
+      <div class="eyebrow">Next up — noch offen</div>
+      <div id="hero2" class="hero"></div>
       <div class="eyebrow">Alle Buzzer</div>
       <div id="grid"></div>
     </section>
@@ -390,6 +403,7 @@ let S=null;
 try{ S=JSON.parse(localStorage.getItem(LS)||"null"); }catch(e){}
 if(!S) S={profile:null,balance:0,stats:{plays:0,wins:0,net:0,best:null},settings:{tempo:"demo",sound:true},bets:{}};
 if(!S.bets)S.bets={}; if(!S.stats)S.stats={plays:0,wins:0,net:0,best:null}; if(!S.settings)S.settings={tempo:"demo",sound:true};
+if(!S.day)S.day={k:"",best:null,won:0,bets:0};
 function save(){ try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){} }
 
 let timeOffset=0;
@@ -467,6 +481,10 @@ function settleUser(i,c,userMs){ // userMs: number | null (verpasst) | "dq"
   }
   S.stats.plays++;
   if(prize>0){ S.balance+=prize; S.stats.net+=prize; if(rank===1)S.stats.wins++; }
+  ensureDay();
+  S.day.bets++;
+  if(typeof userMs==="number"&&(S.day.best==null||userMs<S.day.best))S.day.best=userMs;
+  if(prize>0)S.day.won+=prize;
   bet.res={rank,prize,ms:(typeof userMs==="number")?userMs:null};
   save(); syncMoney();
   return {rank,prize,potGross,potNet,playersTotal,stake,R,userMs:(typeof userMs==="number")?userMs:null,dq:userMs==="dq"};
@@ -743,38 +761,59 @@ function renderGrid(){
   }
 }
 function heroPick(t){
-  // Nur Buzzer zeigen, bei denen man noch einsteigen kann — sobald zu, rückt der nächste Pot nach
+  // Oben: das Spektakel — der Buzzer, der als nächstes losgeht (auch wenn Einsätze zu)
   let best=null,bestD=Infinity;
   for(let i=0;i<N;i++){
     const T=times(i,t);
-    const d=(T.phase==="open")?T.tGo-t:T.tGo+period()-t;
+    let d=T.tGo-t;
+    if(d<-3200)d=T.tGo+period()-t; // Runde vorbei → nächste
     if(d<bestD){bestD=d;best={i,d};}
   }
   return best;
 }
-let heroI=-1;
+function joinPick(t,exclude){
+  // Unten: der nächste Buzzer, bei dem man noch einsteigen kann
+  let best=null,bestD=Infinity;
+  for(let i=0;i<N;i++){
+    if(i===exclude)continue;
+    const T=times(i,t);
+    if(T.phase!=="open")continue;
+    const d=T.tGo-t;
+    if(d<bestD){bestD=d;best={i,d};}
+  }
+  return best;
+}
+let heroI=-1,hero2I=-1;
+const heroR={},hero2R={};
+function buildHero(el,i,R){
+  el.innerHTML='<div class="h-row"><div><div class="h-stake">'+fmtStakeShort(STAKES[i])+' <small>€ Einsatz</small></div></div><div class="h-count">–</div></div>'+
+    '<div class="h-sub"><div class="h-pot">Pot: <b>–</b> · <span>–</span> Spieler</div><div class="h-cta">Mitmachen</div></div>';
+  R.count=el.querySelector(".h-count"); R.pot=el.querySelector(".h-pot b");
+  R.pl=el.querySelector(".h-pot span"); R.cta=el.querySelector(".h-cta");
+  el.onclick=()=>navigate("detail",i);
+}
+function updHeroCard(el,R,i,t){
+  const T=times(i,t);
+  const d=T.tGo-t;
+  el.classList.toggle("hot",d<15000&&d>-3200);
+  if(T.phase==="live"){R.count.textContent="LIVE";R.count.classList.add("soon");}
+  else if(T.phase==="result"){R.count.textContent="🏆";R.count.classList.remove("soon");}
+  else{R.count.textContent=mmss(d);R.count.classList.toggle("soon",d<15000);}
+  R.pot.textContent=fmtEUR(potOf(i,T,t));
+  R.pl.textContent=joinedAt(i,T,t)+(S.bets[T.key]?1:0);
+  R.cta.textContent=T.phase==="open"?(S.bets[T.key]?"Du bist drin ✓":"Mitmachen"):"Läuft gleich";
+}
 function updateHome(t){
   const h=heroPick(t);
   if(!h)return;
-  const T=times(h.i,t);
-  if(heroI!==h.i){
-    heroI=h.i;
-    heroEl.innerHTML='<div class="h-row"><div><div class="h-stake">'+fmtStakeShort(STAKES[h.i])+' <small>€ Einsatz</small></div></div><div class="h-count" id="h-count">–</div></div>'+
-      '<div class="h-sub"><div class="h-pot">Pot: <b id="h-pot">–</b> · <span id="h-pl">–</span> Spieler</div><div class="h-cta" id="h-cta">Mitmachen</div></div>';
-    heroEl.onclick=()=>navigate("detail",h.i);
+  if(heroI!==h.i){ heroI=h.i; buildHero(heroEl,h.i,heroR); }
+  updHeroCard(heroEl,heroR,heroI,t);
+  const j=joinPick(t,heroI);
+  const hero2El=$("#hero2");
+  if(j&&hero2El){
+    if(hero2I!==j.i){ hero2I=j.i; buildHero(hero2El,j.i,hero2R); }
+    updHeroCard(hero2El,hero2R,hero2I,t);
   }
-  const cEl=$("#h-count"),pEl=$("#h-pot"),plEl=$("#h-pl"),ctaEl=$("#h-cta");
-  const d=T.tGo-t;
-  const hot=d<15000&&d>-3200;
-  heroEl.classList.toggle("hot",hot);
-  if(cEl){
-    if(T.phase==="live"){cEl.textContent="LIVE";cEl.classList.add("soon");}
-    else if(T.phase==="result"){cEl.textContent="🏆";cEl.classList.remove("soon");}
-    else{cEl.textContent=mmss(d);cEl.classList.toggle("soon",d<15000);}
-  }
-  if(pEl)pEl.textContent=fmtEUR(potOf(h.i,T,t));
-  if(plEl)plEl.textContent=joinedAt(h.i,T,t)+(S.bets[T.key]?1:0);
-  if(ctaEl)ctaEl.textContent=T.phase==="open"?(S.bets[T.key]?"Du bist drin ✓":"Mitmachen"):"Gleich live!";
   // cards
   for(let i=0;i<N;i++){
     const r=cardRefs[i]; if(!r)continue;
@@ -978,10 +1017,41 @@ function updateOverlay(t){
   }
 }
 
+/* ---------- Tages-Leaderboards ---------- */
+function dayKey(){ const d=new Date(now()); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+function daySeed(salt){ let h=17; const s=dayKey(); for(let k=0;k<s.length;k++)h=(Math.imul(h,31)+s.charCodeAt(k))|0; return (h^Math.imul(salt,2654435761))>>>0; }
+function ensureDay(){ if(!S.day||S.day.k!==dayKey())S.day={k:dayKey(),best:null,won:0,bets:0}; }
+function lbLists(){
+  const shuffle=r=>{ const a=NAMES.slice(); for(let k=a.length-1;k>0;k--){ const j=Math.floor(r()*(k+1)); const tmp=a[k];a[k]=a[j];a[j]=tmp; } return a; };
+  const r1=rng(daySeed(101)),n1=shuffle(r1);
+  const fast=[]; let ms=147.5+r1()*4;
+  for(let k=0;k<10;k++){ fast.push({name:n1[k],val:ms}); ms+=0.35+r1()*2.4; }
+  const r2=rng(daySeed(202)),n2=shuffle(r2);
+  const rich=[]; let amt=15000+r2()*40000;
+  for(let k=0;k<10;k++){ rich.push({name:n2[k],val:Math.round(amt),bets:1+Math.floor(r2()*44)}); amt*=0.52+r2()*0.33; }
+  return {fast,rich};
+}
+function lbHtml(rows,type){
+  ensureDay();
+  let list=rows.slice();
+  if(type==="fast"&&S.day.best!=null){ list.push({name:S.profile.name,val:S.day.best,me:true}); list.sort((a,b)=>a.val-b.val); }
+  if(type==="rich"&&S.day.bets>0){ list.push({name:S.profile.name,val:Math.round(S.day.won),bets:S.day.bets,me:true}); list.sort((a,b)=>b.val-a.val); }
+  let html="";
+  for(let k=0;k<list.length;k++){
+    const row=list[k];
+    if(k>=10&&!row.me)continue;
+    const val=type==="fast"?fmtMs(row.val):fmtEUR(row.val);
+    const sub=type==="rich"?'<span class="sub">'+row.bets+(row.bets===1?" Bet":" Bets")+"</span>":"";
+    html+='<div class="lb-row'+(k<3?" top":"")+(row.me?" me":"")+'"><span class="rk">'+(k+1)+'</span><span class="nm">'+esc(row.me?row.name+" (Du)":row.name)+"</span>"+sub+'<span class="val'+(type==="rich"?" gold":"")+'">'+val+"</span></div>";
+  }
+  return html;
+}
+
 /* ---------- Profil ---------- */
 function renderProfile(){
   const st=S.stats;
   const wr=st.plays?Math.round(st.wins/st.plays*100):0;
+  const LB=lbLists();
   views.profile.innerHTML=
     '<div class="backrow"><button class="backbtn" id="p-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button><div id="d-title">Profil</div></div>'+
     '<div class="p-name">'+esc(S.profile.name)+'</div><div class="p-bal">'+fmtEUR(S.balance)+"</div>"+
@@ -991,6 +1061,10 @@ function renderProfile(){
       '<div class="dstat"><div class="v">'+(st.best?fmtMs(st.best):"–")+'</div><div class="k">Beste Reaktion</div></div>'+
       '<div class="dstat"><div class="v" style="color:'+(st.net>=0?"var(--gold)":"var(--red)")+'">'+(st.net>=0?"+":"")+fmtEUR(st.net)+'</div><div class="k">Bilanz</div></div>'+
     "</div>"+
+    '<div class="eyebrow" style="margin-top:26px">⚡ Schnellste heute</div>'+
+    '<div class="lb">'+lbHtml(LB.fast,"fast")+"</div>"+
+    '<div class="eyebrow">🏆 Top-Gewinner heute</div>'+
+    '<div class="lb">'+lbHtml(LB.rich,"rich")+"</div>"+
     '<div class="p-rows">'+
       '<div class="p-row"><span>Demo-Tempo<span class="sub">Runde alle 4 min statt 30 min</span></span><button class="switch'+(S.settings.tempo==="demo"?" on":"")+'" id="p-tempo"></button></div>'+
       '<div class="p-row"><span>Sound</span><button class="switch'+(S.settings.sound?" on":"")+'" id="p-sound"></button></div>'+
