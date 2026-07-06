@@ -78,6 +78,37 @@ input{font:inherit;color:inherit}
 #feed{height:212px;overflow-y:auto;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);margin-bottom:22px;scrollbar-width:none}
 #feed::-webkit-scrollbar{display:none}
 
+/* ---------- start-menü ---------- */
+#jp-banner{border:1px solid rgba(214,179,106,.45);padding:16px 16px 14px;margin-bottom:22px;cursor:pointer;background:var(--bg)}
+#jp-banner.hot{border-color:var(--gold)}
+#jp-banner .j-top{display:flex;justify-content:space-between;align-items:baseline}
+#jp-banner .j-title{font-size:26px;font-weight:900;letter-spacing:-.5px;color:var(--gold)}
+#jp-banner .j-when{font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+#jp-banner .j-count{font-size:30px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-1px;color:var(--gold);text-align:right}
+#jp-banner .j-sub{display:flex;justify-content:space-between;align-items:flex-end;margin-top:12px}
+#jp-banner .j-pot{font-size:14px;color:var(--muted);font-weight:600}
+#jp-banner .j-pot b{color:var(--gold);font-size:19px;font-weight:900;font-variant-numeric:tabular-nums}
+#jp-banner .j-cta{font-size:12px;font-weight:800;letter-spacing:1px;color:#0B0800;background:var(--gold);padding:9px 14px}
+#tiles{display:flex;flex-direction:column;gap:9px;margin-bottom:22px}
+#tiles .trow{display:flex;gap:9px}
+.tile{border:1px solid var(--line);background:var(--bg);cursor:pointer;padding:15px 15px 13px;flex:1;transition:border-color .15s}
+.tile:active{border-color:var(--violet-dim)}
+.tile .t-name{font-size:19px;font-weight:900;letter-spacing:-.4px}
+.tile .t-sub{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:5px;line-height:1.5;font-variant-numeric:tabular-nums}
+.tile .t-sub b{color:var(--gold);font-weight:900}
+.tile .t-sub .hot{color:var(--red);font-weight:800}
+.tile .t-sub .ok{color:var(--green);font-weight:800}
+
+/* ---------- privat / auswahl-chips ---------- */
+.choice{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.choice button{padding:12px 0;background:var(--bg);border:1px solid var(--line);font-weight:800;font-size:14.5px;font-variant-numeric:tabular-nums}
+.choice button.sel{border-color:var(--violet);color:var(--violet)}
+.wide-btn{width:100%;padding:14px;font-weight:800;font-size:15px;color:#fff;background:var(--violet-dim);margin-bottom:9px}
+.wide-btn.ghost{background:var(--bg);border:1px solid var(--line);color:var(--muted)}
+.wide-btn:disabled{opacity:.35}
+.pv-note{font-size:11.5px;color:var(--muted2);line-height:1.6;margin:10px 0 0}
+.explain{font-size:12.5px;color:var(--muted);line-height:1.6;margin:2px 2px 16px}
+
 /* ---------- deine einsätze ---------- */
 #mybets-wrap{margin-bottom:22px}
 #mybets{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
@@ -125,7 +156,7 @@ input{font:inherit;color:inherit}
 /* ---------- detail ---------- */
 .backrow{display:flex;align-items:center;gap:12px;margin-bottom:8px}
 .backbtn{width:36px;height:36px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted)}
-#d-title{font-size:21px;font-weight:900;letter-spacing:-.5px;flex:1}
+#d-title,.vtitle{font-size:21px;font-weight:900;letter-spacing:-.5px;flex:1}
 #d-mode{font-size:10px;font-weight:800;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;display:flex;align-items:center;gap:7px}
 #d-info{width:20px;height:20px;border:1px solid var(--line);color:var(--muted);font-size:11px;font-weight:800;font-style:italic;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif}
 #d-stage{display:flex;flex-direction:column;align-items:center;padding:10px 0 4px;position:relative}
@@ -135,18 +166,20 @@ input{font:inherit;color:inherit}
 #ring .track{stroke:var(--line)}
 #ring .prog{stroke:var(--violet);stroke-linecap:butt}
 #ring.joined .prog{stroke:var(--green)}
-#buzzer{
+.buzzer{
   width:78%;aspect-ratio:1;border-radius:50%;position:relative;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   background:radial-gradient(circle at 35% 30%, #7E62C4 0%, #5A4499 55%, #33265F 100%);
   box-shadow:0 16px 36px rgba(0,0,0,.75), inset 0 6px 14px rgba(255,255,255,.10), inset 0 -12px 26px rgba(0,0,0,.45);
   transition:transform .1s ease, filter .3s;
 }
-#buzzer:active{transform:scale(.96)}
-#buzzer .b1{font-size:28px;font-weight:900;letter-spacing:-1px}
-#buzzer .b2{font-size:9.5px;font-weight:800;letter-spacing:1.8px;color:rgba(255,255,255,.75)}
-#buzzer.joined{background:radial-gradient(circle at 35% 30%, #58A981 0%, #3B7E5D 55%, #1C4433 100%)}
-#buzzer.locked{filter:saturate(.3) brightness(.5)}
+.buzzer:active{transform:scale(.96)}
+.buzzer .b1{font-size:28px;font-weight:900;letter-spacing:-1px}
+.buzzer .b2{font-size:9.5px;font-weight:800;letter-spacing:1.8px;color:rgba(255,255,255,.75)}
+.buzzer.joined{background:radial-gradient(circle at 35% 30%, #58A981 0%, #3B7E5D 55%, #1C4433 100%)}
+.buzzer.locked{filter:saturate(.3) brightness(.5)}
+.buzzer.goldb{background:radial-gradient(circle at 35% 30%, #E3C57E 0%, #B08D45 55%, #5C4720 100%)}
+.buzzer.standalone{width:min(52vw,210px);margin:6px auto 2px}
 #d-stats{display:flex;width:100%;margin-top:18px;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
 .dstat{flex:1;padding:12px 6px;text-align:center}
 .dstat + .dstat{border-left:1px solid var(--line2)}
@@ -162,13 +195,13 @@ input{font:inherit;color:inherit}
 .pp-note{font-size:11px;color:var(--muted2);margin-top:6px;line-height:1.5}
 #d-chatbox{margin-top:22px}
 #d-chat{max-height:38vh;overflow-y:auto}
-#view-detail.on{padding-bottom:calc(100px + var(--sab))}
-#d-chatrow{position:fixed;left:0;right:0;bottom:0;z-index:40;max-width:520px;margin:0 auto;
+#view-detail.on,#view-random.on,#view-jack.on,#view-priv.on{padding-bottom:calc(100px + var(--sab))}
+.chatrow{position:fixed;left:0;right:0;bottom:0;z-index:40;max-width:520px;margin:0 auto;
   display:flex;gap:8px;padding:10px 14px calc(12px + var(--sab));
   background:var(--bg);border-top:1px solid var(--line2)}
-#d-chatrow input{flex:1;background:var(--bg);border:1px solid var(--line);padding:11px 14px;font-size:14px;outline:none;color:var(--text)}
-#d-chatrow input:focus{border-color:var(--violet-dim)}
-#d-chatrow button{width:44px;border:1px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:var(--violet)}
+.chatrow input{flex:1;background:var(--bg);border:1px solid var(--line);padding:11px 14px;font-size:14px;outline:none;color:var(--text)}
+.chatrow input:focus{border-color:var(--violet-dim)}
+.chatrow button{width:44px;border:1px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;color:var(--violet)}
 
 /* ---------- profil ---------- */
 .p-name{font-size:21px;font-weight:900}
@@ -307,20 +340,48 @@ input{font:inherit;color:inherit}
   </header>
 
   <main id="main">
-    <section id="view-home" class="view on">
-      <div class="eyebrow"><span class="dot"></span> Next up</div>
-      <div id="hero" class="hero"></div>
+    <section id="view-menu" class="view on">
+      <div id="jp-banner"></div>
+      <div class="eyebrow">Wähl deinen Modus</div>
+      <div id="tiles">
+        <div class="tile" id="tile-classic">
+          <div class="t-name">⚡ Klassisch</div>
+          <div class="t-sub" id="tc-sub">19 Buzzer · 1 € bis 20K €</div>
+        </div>
+        <div class="trow">
+          <div class="tile" id="tile-random">
+            <div class="t-name">🎲 Random</div>
+            <div class="t-sub" id="tr-sub">5 € · GO kommt zufällig</div>
+          </div>
+          <div class="tile" id="tile-priv">
+            <div class="t-name">👥 Privat</div>
+            <div class="t-sub" id="tp-sub">Eigener Buzzer nur für Freunde</div>
+          </div>
+        </div>
+      </div>
       <div id="mybets-wrap" class="hidden">
         <div class="eyebrow">Deine Einsätze</div>
         <div id="mybets"></div>
       </div>
       <div class="eyebrow"><span class="dot"></span> Live — alle Einsätze</div>
       <div id="feed" class="feed"></div>
+    </section>
+
+    <section id="view-home" class="view">
+      <div class="backrow"><button class="backbtn" id="c-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="vtitle">Klassisch</div></div>
+      <div class="eyebrow"><span class="dot"></span> Next up</div>
+      <div id="hero" class="hero"></div>
       <div class="eyebrow">Next up — noch offen</div>
       <div id="hero2" class="hero"></div>
       <div class="eyebrow">Alle Buzzer</div>
       <div id="grid"></div>
     </section>
+
+    <section id="view-random" class="view"></section>
+
+    <section id="view-jack" class="view"></section>
+
+    <section id="view-priv" class="view"></section>
 
     <section id="view-profile" class="view"></section>
 
@@ -395,6 +456,10 @@ const RAKE=0;               // Demo: keine Gebühr ausgewiesen — Monetarisieru
 const CALIB=75, MINMS=92;   // Geräte-Latenz-Kalibrierung (ms)
 const PERIODS={demo:240000, real:1800000};
 const NAMES=["NovaStrike","Mike_87","luna.exe","QuickFingerz","BlitzKid","jonas_hh","Vexx","MsMillisekunde","turbo_tim","GhostTap","Kira","FlashF1n","NeoJ","SpeedyGnz","0xRapid","HannaBanana","ClickCzar","piXelPete","MiaMoneyy","TapGod","Chr1s","ZoeZoom","Rudi_R","VelvetViper","OTTO","fastlane_","JuliaW","BigPotBob","tiny_tina","Maximus","ping_9ms","AnnikaZ","Der_Daumen","Ricochet","MoneyMika","SnapZ","Elif_x","Timo_x","LagLordLee","frieda.f","BeepBoop","Cassia","Nordlicht","TTV_Blur","paul_pkr","Skrrt","Wrz","Dash_Dee"];
+const RND=100,JP=101,PRIV=102;      // Spezial-Buzzer: Random, Jackpot, Privat
+const RND_STAKE=5,JP_STAKE=10;
+const RND_PERIOD=300000;            // Random-Fenster: 5 min
+const FRIENDS=["Jonas","Mara","Leon","Zoe","Felix","Nina","Tom","Lea","Paul","Emma","Ben","Mia"];
 const HYPE=["let's gooo 🔥","heute hol ich den Pot","wer ist bereit?","mein Daumen zittert schon","easy win incoming","alle zu langsam hier 😤","letzte Runde 12 ms zu spät 😭","POT IST FETT 💰","ich fühl's heute","nicht blinzeln, Leute","gleich geht's los!!","der Pot wächst 👀","viel Glück allen 🍀","niemand schlägt meine 180 ms","Koffein kickt ⚡","Finger gestreckt?","noch jemand rein hier?","dieser Pot gehört mir"];
 
 /* ---------- State ---------- */
@@ -419,6 +484,7 @@ function fmtEUR(n){ return Math.abs(n-Math.round(n))<0.005 ? eur0.format(Math.ro
 function fmtMs(ms){ return ms.toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2})+" ms"; }
 function fmtStakeShort(s){ return s>=1000 ? (s/1000).toLocaleString("de-DE")+"K" : String(s); }
 function mmss(ms){ ms=Math.max(0,ms); const t=Math.ceil(ms/1000); const m=Math.floor(t/60),s=t%60; return m+":"+String(s).padStart(2,"0"); }
+function fmtLong(ms){ ms=Math.max(0,ms); const t=Math.ceil(ms/1000); const h=Math.floor(t/3600),m=Math.floor((t%3600)/60),s=t%60; return h>0?h+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0"):mmss(ms); }
 function clock(t){ const d=new Date(t); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
 function esc(s){ return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function rng(seed){ let a=seed>>>0; return function(){ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
@@ -428,7 +494,46 @@ function seedOf(i,c,salt){ return (Math.imul(i+1,2654435761)^Math.imul((c%100000
 const period=()=>PERIODS[S.settings.tempo]||PERIODS.demo;
 const offsetOf=i=>Math.round(i*period()/N);
 const modeOf=stake=>(stake>=200&&stake<=1000)?"top3":"wta";
+const stakeOf=i=>i===RND?RND_STAKE:i===JP?JP_STAKE:i===PRIV?(S.private?S.private.stake:0):STAKES[i];
+const modeOfIdx=i=>i>=100?"wta":modeOf(STAKES[i]);
+const periodOf=i=>i===RND?RND_PERIOD:i===JP?86400000:i===PRIV?0:period();
+function labelOf(i){ return i===RND?"Random":i===JP?"JACKPOT":i===PRIV?"Privat":fmtStakeShort(STAKES[i])+"€-Pot"; }
+function phaseOf(t,tClose,tCount,tGoBase,tGo){
+  if(t>=tGo+3000)return "result";
+  if(t>=tGo)return "live";
+  if(t>=tGoBase)return "suspense";
+  if(t>=tCount)return "countdown";
+  if(t>=tClose)return "locked";
+  return "open";
+}
+function timesRnd(t){
+  const P=RND_PERIOD,c=Math.floor(t/P),start=c*P,end=start+P;
+  const tGo=start+25000+rng(seedOf(RND,c,11))()*(P-70000);
+  const tClose=tGo-1200,tCount=tGo-1100,tGoBase=tGo-1000;
+  return {i:RND,c,start,end,tClose,tCount,tGoBase,tGo,phase:phaseOf(t,tClose,tCount,tGoBase,tGo),key:RND+":"+c};
+}
+function timesJp(t){
+  const d=new Date(t);
+  let base=new Date(d.getFullYear(),d.getMonth(),d.getDate(),20,15,0,0).getTime();
+  if(t>=base+60000)base+=86400000; // heutige Runde vorbei → morgen
+  const c=Math.round(base/86400000);
+  const start=base-86400000+120000,end=base+60000;
+  const tClose=base-15000,tCount=base-12000,tGoBase=base-9000;
+  const tGo=tGoBase+800+rng(seedOf(JP,c,11))()*1800;
+  return {i:JP,c,start,end,tClose,tCount,tGoBase,tGo,phase:phaseOf(t,tClose,tCount,tGoBase,tGo),key:JP+":"+c};
+}
+function timesPriv(t){
+  const pv=S.private; if(!pv)return null;
+  const c=Math.floor(pv.createdAt/1000)%100000000;
+  const E=pv.startAt,start=pv.createdAt,end=E+45000;
+  const tClose=E-15000,tCount=E-12000,tGoBase=E-9000;
+  const tGo=tGoBase+800+rng(seedOf(PRIV,c,11))()*1800;
+  return {i:PRIV,c,start,end,tClose,tCount,tGoBase,tGo,phase:phaseOf(t,tClose,tCount,tGoBase,tGo),key:PRIV+":"+c};
+}
 function times(i,t){
+  if(i===RND)return timesRnd(t);
+  if(i===JP)return timesJp(t);
+  if(i===PRIV)return timesPriv(t);
   const P=period(),off=offsetOf(i);
   const c=Math.floor((t-off)/P),start=c*P+off,end=start+P;
   const tClose=end-15000,tCount=end-12000,tGoBase=end-9000;
@@ -441,9 +546,23 @@ function times(i,t){
   else if(t>=tClose)phase="locked";
   return {i,c,start,end,tClose,tCount,tGoBase,tGo,phase,key:i+":"+c};
 }
-function targetOf(i,c){ const base=TARGET[STAKES[i]]||6; const r=rng(seedOf(i,c,22))(); return Math.max(2,Math.round(base*(0.7+r*0.6))); }
-function joinedAt(i,T,t){ const p=clamp((t-T.start)/(T.tClose-T.start),0,1); return Math.ceil(targetOf(i,T.c)*Math.pow(p,0.6)); }
-function potOf(i,T,t){ return (joinedAt(i,T,t)+(S.bets[T.key]?1:0))*STAKES[i]; }
+function targetOf(i,c){
+  const r=rng(seedOf(i,c,22))();
+  if(i===RND)return Math.round(28+r*45);
+  if(i===JP)return Math.round(900+r*1700);
+  if(i===PRIV)return 3+Math.floor(r*5); // 3–7 Freunde
+  const base=TARGET[STAKES[i]]||6;
+  return Math.max(2,Math.round(base*(0.7+r*0.6)));
+}
+function joinedAt(i,T,t){
+  let winEnd=T.tClose,exp=0.6;
+  if(i===RND)exp=0.75;
+  else if(i===JP)exp=2.4;                                   // Pot schwillt Richtung Abend an
+  else if(i===PRIV){ winEnd=Math.min(T.tClose,T.start+120000); exp=0.5; } // Freunde kommen in ~2 min
+  const p=clamp((t-T.start)/Math.max(1,winEnd-T.start),0,1);
+  return Math.ceil(targetOf(i,T.c)*Math.pow(p,exp));
+}
+function potOf(i,T,t){ return (joinedAt(i,T,t)+(S.bets[T.key]?1:0))*stakeOf(i); }
 
 /* ---------- Engine: Runden-Auflösung ---------- */
 const resolved={};
@@ -459,22 +578,23 @@ function resolveRound(i,c){
     arr.push(clamp(Math.exp(Math.log(285)+0.32*z),152,900));
   }
   arr.sort((a,b)=>a-b);
-  const nm=()=>NAMES[Math.floor(r()*NAMES.length)];
+  const pool=i===PRIV?FRIENDS:NAMES;
+  const nm=()=>pool[Math.floor(r()*pool.length)];
   return resolved[key]={players,times:arr,winner:nm(),second:nm(),third:nm(),winnerMs:arr[0]};
 }
 function settleUser(i,c,userMs){ // userMs: number | null (verpasst) | "dq"
   const key=i+":"+c; const bet=S.bets[key];
   if(!bet||bet.done)return null;
   bet.done=true;
-  const stake=STAKES[i], R=resolveRound(i,c);
+  const stake=bet.stake||stakeOf(i), R=resolveRound(i,c);
   const playersTotal=R.players+1;
   const potGross=playersTotal*stake, potNet=potGross*(1-RAKE);
+  const mode=modeOfIdx(i);
   let rank=null,prize=0;
   if(typeof userMs==="number"){
     let faster=0;
     for(const b of R.times){ if(b<userMs)faster++; else break; }
     rank=1+Math.round(faster*(R.players/R.times.length));
-    const mode=modeOf(stake);
     if(mode==="wta"){ if(rank===1)prize=potNet; }
     else{ if(rank===1)prize=potNet*0.6; else if(rank===2)prize=potNet*0.25; else if(rank===3)prize=potNet*0.15; }
     if(S.stats.best===null||userMs<S.stats.best)S.stats.best=userMs;
@@ -487,12 +607,20 @@ function settleUser(i,c,userMs){ // userMs: number | null (verpasst) | "dq"
   if(prize>0)S.day.won+=prize;
   bet.res={rank,prize,ms:(typeof userMs==="number")?userMs:null};
   save(); syncMoney();
-  return {rank,prize,potGross,potNet,playersTotal,stake,R,userMs:(typeof userMs==="number")?userMs:null,dq:userMs==="dq"};
+  return {rank,prize,potGross,potNet,playersTotal,stake,mode,R,userMs:(typeof userMs==="number")?userMs:null,dq:userMs==="dq"};
 }
 
 /* ---------- Chat / Feed ---------- */
 const chats={}; for(let i=0;i<N;i++)chats[i]=[];
+chats[RND]=[];chats[JP]=[];chats[PRIV]=[];
 const FEED=[];
+function activeChatEl(i){
+  if(currentView==="detail"&&currentDetail===i)return $("#d-chat");
+  if(currentView==="random"&&i===RND)return $("#rd-chat");
+  if(currentView==="jack"&&i===JP)return $("#jp-chat");
+  if(currentView==="priv"&&i===PRIV)return $("#pv-chat");
+  return null;
+}
 function msgNode(m,ctx){ // ctx: "feed" | "chat"
   const el=document.createElement("div");
   let cls="fe",html="";
@@ -502,7 +630,7 @@ function msgNode(m,ctx){ // ctx: "feed" | "chat"
     html=time+"<span><b>"+esc(m.name)+'</b> <span class="txt">ist drin</span>'+extra+' <span class="amt">+'+fmtEUR(m.amt)+"</span></span>";
   }else if(m.type==="win"){
     cls+=" winrow";
-    const pot=(ctx==="feed"&&m.i!=null)?' <span class="txt">· '+fmtStakeShort(STAKES[m.i])+"€-Pot</span>":"";
+    const pot=(ctx==="feed"&&m.i!=null)?' <span class="txt">· '+labelOf(m.i)+"</span>":"";
     const ms=(ctx==="chat"&&m.ms)?' <span class="txt">('+fmtMs(m.ms)+")</span>":"";
     html=time+"<span>🏆 <b>"+esc(m.name)+'</b> <span class="txt">holt</span> <span class="amt big">'+fmtEUR(m.amt)+"</span>"+pot+ms+"</span>";
   }else if(m.type==="sys"){
@@ -525,22 +653,33 @@ function appendTo(listEl,node,cap){
 function pushChat(i,m){
   m.t=m.t||now();
   chats[i].push(m); if(chats[i].length>60)chats[i].shift();
-  if(currentView==="detail"&&currentDetail===i)appendTo($("#d-chat"),msgNode(m,"chat"),60);
+  const el=activeChatEl(i);
+  if(el)appendTo(el,msgNode(m,"chat"),60);
 }
 function pushFeed(m){
   m.t=m.t||now();
   FEED.push(m); if(FEED.length>100)FEED.shift();
-  if(currentView==="home")appendTo($("#feed"),msgNode(m,"feed"),100);
+  if(currentView==="menu")appendTo($("#feed"),msgNode(m,"feed"),100);
 }
-function pushBoth(i,m){ pushChat(i,Object.assign({},m)); pushFeed(Object.assign({i:i},m)); }
+function pushBoth(i,m){
+  pushChat(i,Object.assign({},m));
+  if(i===PRIV)return; // Private Runden bleiben privat
+  pushFeed(Object.assign({i:i},m));
+}
 
 /* ---------- Engine: Tick ---------- */
-const lastPhase={},joinCache={},lastJoinMsgAt={},announced={};
+const lastPhase={},joinCache={},lastJoinMsgAt={},announced={},notified={};
 let engaged=null;
+function activeIdx(){
+  const a=[]; for(let i=0;i<N;i++)a.push(i);
+  a.push(RND,JP);
+  if(S.private)a.push(PRIV);
+  return a;
+}
 function tick(){
   const t=now();
-  for(let i=0;i<N;i++){
-    const T=times(i,t);
+  for(const i of activeIdx()){
+    const T=times(i,t); if(!T)continue;
     const sig=T.key+"|"+T.phase;
     if(lastPhase[i]!==sig){ lastPhase[i]=sig; onPhase(i,T); }
     if(T.phase==="open"||T.phase==="locked"){
@@ -549,35 +688,77 @@ function tick(){
         joinCache[T.key]=j;
         if((lastJoinMsgAt[i]||0)+1600<t){
           lastJoinMsgAt[i]=t;
-          pushBoth(i,{type:"join",name:pick(NAMES),amt:STAKES[i],extra:j-prev-1});
+          const name=i===PRIV?FRIENDS[(j-1)%FRIENDS.length]:pick(NAMES);
+          pushBoth(i,{type:"join",name,amt:stakeOf(i),extra:i===PRIV?0:j-prev-1});
         }
       }
     }
   }
+  // Privater Buzzer abgelaufen → aufräumen
+  if(S.private){
+    const T=timesPriv(t);
+    if(T&&t>=T.end){
+      const bet=S.bets[T.key];
+      if(bet&&!bet.done)settleUser(PRIV,T.c,null);
+      S.private=null; save();
+      if(currentView==="priv")renderPriv();
+    }
+  }
   if(Object.keys(joinCache).length>400){ for(const k of Object.keys(joinCache).slice(0,200))delete joinCache[k]; }
   checkTakeover(t);
-  if(currentView==="detail"&&currentDetail!=null&&Math.random()<0.028)
-    pushChat(currentDetail,{type:"hype",name:pick(NAMES),text:pick(HYPE)});
+  checkNotify(t);
+  const hypeIdx=currentView==="detail"?currentDetail:currentView==="random"?RND:currentView==="jack"?JP:currentView==="priv"&&S.private?PRIV:null;
+  if(hypeIdx!=null&&Math.random()<0.028)
+    pushChat(hypeIdx,{type:"hype",name:hypeIdx===PRIV?pick(FRIENDS):pick(NAMES),text:pick(HYPE)});
   // UI auch ohne rAF aktuell halten (Energiesparmodus / gedrosselte Tabs)
+  updateViews(t);
+}
+function updateViews(t){
+  if(currentView==="menu")updateMenu(t);
   if(currentView==="home")updateHome(t);
   if(currentView==="detail")updateDetail(t);
+  if(currentView==="random")updateRandom(t);
+  if(currentView==="jack")updateJack(t);
+  if(currentView==="priv")updatePriv(t);
   updateOverlay(t);
 }
+/* Lokale Benachrichtigungen (App im Hintergrund geöffnet) */
+function notify(title,body,tag){
+  if(!S.settings.notif)return;
+  if(!("Notification" in window)||Notification.permission!=="granted")return;
+  if(!document.hidden)return;
+  try{ new Notification(title,{body,tag}); }catch(e){}
+}
+function checkNotify(t){
+  if(!S.settings.notif)return;
+  for(const key of Object.keys(S.bets)){
+    const b=S.bets[key]; if(b.done)continue;
+    const [i,c]=key.split(":").map(Number);
+    if(i===RND)continue; // Random verrät seine Zeit nicht
+    const T=times(i,t); if(!T||T.key!==key)continue;
+    const d=T.tGo-t;
+    if(d<120000&&d>90000&&!notified[key+":2m"]){ notified[key+":2m"]=1; notify("BUZZER","Dein "+labelOf(i)+" startet in 2 Minuten — Pot "+fmtEUR(potOf(i,T,t)),key+"2m"); }
+    if(d<20000&&d>8000&&!notified[key+":20s"]){ notified[key+":20s"]=1; notify("BUZZER","GLEICH GEHT'S LOS — "+labelOf(i)+"! Mach dich bereit ⚡",key+"20s"); }
+  }
+  const TJ=timesJp(t),dj=TJ.tGo-t;
+  if(dj<900000&&dj>840000&&!notified["jp:"+TJ.c]){ notified["jp:"+TJ.c]=1; notify("BUZZER","🏆 JACKPOT um 20:15 — Pot schon "+fmtEUR(potOf(JP,TJ,t)),"jp"+TJ.c); }
+}
 function onPhase(i,T){
-  if(T.phase==="locked"&&currentDetail===i)pushChat(i,{type:"sys",text:"🔒 Einsätze geschlossen — gleich geht's los"});
-  if(T.phase==="open"&&currentDetail===i)pushChat(i,{type:"sys",text:"Neue Runde — Einsatz "+fmtEUR(STAKES[i])});
+  const watching=activeChatEl(i)!=null;
+  if(T.phase==="locked"&&watching)pushChat(i,{type:"sys",text:"🔒 Einsätze geschlossen — gleich geht's los"});
+  if(T.phase==="open"&&watching&&i!==PRIV)pushChat(i,{type:"sys",text:"Neue Runde — Einsatz "+fmtEUR(stakeOf(i))});
   if(T.phase==="result"&&!announced[T.key]){
     announced[T.key]=1;
     const R=resolveRound(i,T.c);
     const bet=S.bets[T.key];
     if(bet&&!bet.done){ // Nutzer war drin, hat aber nichts getan (App zu / Overlay blockiert)
       settleUser(i,T.c,null);
-      toast("Runde verpasst — Einsatz verloren ("+fmtEUR(STAKES[i])+")");
+      toast("Runde verpasst — Einsatz verloren ("+fmtEUR(bet.stake||stakeOf(i))+")");
     }
     const userWon=bet&&bet.res&&bet.res.rank===1;
     const playersTotal=R.players+(bet?1:0);
-    const potNet=playersTotal*STAKES[i]*(1-RAKE);
-    const prize=modeOf(STAKES[i])==="wta"?potNet:potNet*0.6;
+    const potNet=playersTotal*(bet&&bet.stake?bet.stake:stakeOf(i))*(1-RAKE);
+    const prize=modeOfIdx(i)==="wta"?potNet:potNet*0.6;
     pushBoth(i,{type:"win",name:userWon?S.profile.name:R.winner,amt:userWon?bet.res.prize:prize,ms:userWon?bet.res.ms:R.winnerMs});
   }
 }
@@ -589,11 +770,14 @@ function checkTakeover(t){
     const bet=S.bets[key]; if(bet.done)continue;
     const [i,c]=key.split(":").map(Number);
     const T=times(i,t);
+    if(!T){ // z. B. privater Buzzer existiert nicht mehr
+      settleUser(i,c,null); delete S.bets[key]; save(); continue;
+    }
     if(T.c!==c){ // Runde längst vorbei (Reload / App im Hintergrund) → auflösen
-      if(T.c>c){ settleUser(i,c,null); toast("Runde verpasst — Einsatz verloren ("+fmtEUR(bet.stake||STAKES[i])+")"); }
+      if(T.c>c){ settleUser(i,c,null); toast("Runde verpasst — Einsatz verloren ("+fmtEUR(bet.stake||stakeOf(i))+")"); }
       continue;
     }
-    const soon=(T.phase==="open"&&T.tClose-t<8000);
+    const soon=(T.phase==="open"&&T.tClose-t<8000)||(i===RND&&T.phase==="open"); // Random: sofort in Bereitschaft
     if(soon||T.phase==="locked"||T.phase==="countdown"||T.phase==="suspense"||T.phase==="live"){
       engage(i,T); return;
     }
@@ -601,7 +785,10 @@ function checkTakeover(t){
 }
 function engage(i,T){
   engaged={i,c:T.c,key:T.key,state:"wait",tapped:false,goPerf:0,userMs:null,res:null,goTimer:null,missTimer:null,lastCount:null};
-  if(currentView!=="detail"||currentDetail!==i)navigate("detail",i);
+  if(i===RND){ if(currentView!=="random")navigate("random"); }
+  else if(i===JP){ if(currentView!=="jack")navigate("jack"); }
+  else if(i===PRIV){ if(currentView!=="priv")navigate("priv"); }
+  else if(currentView!=="detail"||currentDetail!==i)navigate("detail",i);
   renderOverlayShell(i,T);
   ovEl.classList.add("on");
   const dGo=T.tGo-now();
@@ -612,12 +799,16 @@ const ovEl=$("#ov");
 function renderOverlayShell(i,T){
   const t=now();
   ovEl.classList.remove("go-bg");
+  const title=i===RND?"Random-Buzzer · "+fmtEUR(RND_STAKE):i===JP?"🏆 JACKPOT · "+fmtEUR(JP_STAKE):i===PRIV?"Privater Buzzer · "+fmtEUR(stakeOf(PRIV)):fmtEUR(STAKES[i])+"-Buzzer";
+  const hint=i===RND
+    ?'GO kann <b style="color:#fff">JEDEN MOMENT</b> kommen — tipp erst, wenn der Bildschirm grün wird.<br>Jeder Tap davor = Fehlstart, Einsatz weg.'
+    :'Warte auf <b style="color:#fff">GO!</b> — dann tipp irgendwo auf den Bildschirm.<br>Zu früh getippt = Fehlstart, Einsatz weg.';
   ovEl.innerHTML=
-    '<div class="ov-eyebrow">'+fmtEUR(STAKES[i])+"-Buzzer · Runde läuft</div>"+
+    '<div class="ov-eyebrow">'+title+" · Runde läuft</div>"+
     '<div class="ov-pot" id="ov-pot">'+fmtEUR(potOf(i,T,t))+"</div>"+
     '<div class="ov-players" id="ov-pl">'+(joinedAt(i,T,t)+1)+" Spieler im Pot</div>"+
     '<div class="ov-center" id="ov-center"><div class="ov-big" id="ov-big">–</div><div id="ov-sub" style="font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.5px"></div></div>'+
-    '<div class="ov-hint" id="ov-hint">Warte auf <b style="color:#fff">GO!</b> — dann tipp irgendwo auf den Bildschirm.<br>Zu früh getippt = Fehlstart, Einsatz weg.</div>';
+    '<div class="ov-hint" id="ov-hint">'+hint+"</div>";
 }
 function fireGo(){
   if(!engaged||engaged.state!=="wait")return;
@@ -662,7 +853,7 @@ function showResultPanel(o){
       '<div class="r-loss">−'+fmtEUR(res?res.stake:0)+"</div>";
   }else if(res){
     const won=res.prize>0, first=res.rank===1;
-    const mode=modeOf(res.stake);
+    const mode=res.mode||modeOf(res.stake);
     let pod="";
     if(mode==="top3"){
       const shares=[.6,.25,.15];
@@ -704,25 +895,34 @@ ovEl.addEventListener("pointerdown",e=>{
     setTimeout(()=>finishRound(ms,"ok"),1300);
   }else if(engaged.state==="wait"){
     const T=times(engaged.i,now());
-    if(T.phase==="countdown"||T.phase==="suspense"){ e.preventDefault(); falseStart(); }
+    if(engaged.i===RND||(T&&(T.phase==="countdown"||T.phase==="suspense"))){ e.preventDefault(); falseStart(); }
     else{ const c=$("#ov-center"); if(c){c.classList.remove("shake"); void c.offsetWidth; c.classList.add("shake");} }
   }
 });
 
 /* ---------- Views / Navigation ---------- */
-let currentView="home",currentDetail=null;
-const views={home:$("#view-home"),profile:$("#view-profile"),detail:$("#view-detail")};
+let currentView="menu",currentDetail=null;
+const views={menu:$("#view-menu"),home:$("#view-home"),random:$("#view-random"),jack:$("#view-jack"),priv:$("#view-priv"),profile:$("#view-profile"),detail:$("#view-detail")};
 function navigate(v,arg){
   currentView=v;
   for(const k of Object.keys(views))views[k].classList.toggle("on",k===v);
   $("#btn-profile").classList.toggle("on",v==="profile");
   if(v==="detail"){ currentDetail=arg; renderDetail(arg); }
   else currentDetail=null;
-  if(v==="home")renderFeed();
+  if(v==="menu")renderFeed();
+  if(v==="random")renderRandom();
+  if(v==="jack")renderJack();
+  if(v==="priv")renderPriv();
   if(v==="profile")renderProfile();
+  updateViews(now());
   views[v].scrollTop=0; $("#main").scrollTop=0;
 }
-$("#btn-profile").addEventListener("click",()=>navigate(currentView==="profile"?"home":"profile"));
+$("#btn-profile").addEventListener("click",()=>navigate(currentView==="profile"?"menu":"profile"));
+$("#c-back").addEventListener("click",()=>navigate("menu"));
+$("#tile-classic").addEventListener("click",()=>navigate("home"));
+$("#tile-random").addEventListener("click",()=>navigate("random"));
+$("#tile-priv").addEventListener("click",()=>navigate("priv"));
+$("#jp-banner").addEventListener("click",()=>navigate("jack"));
 
 /* Wischen in der Detail-Ansicht: links/rechts = nächster/voriger Buzzer */
 let swX=null,swY=null;
@@ -840,7 +1040,6 @@ function updateHome(t){
     if(S.bets[Ti.key]&&!S.bets[Ti.key].done){ r.card.style.borderColor="rgba(79,169,124,.7)"; }
     else r.card.style.borderColor="";
   }
-  updateMyBets(t);
 }
 
 /* ---------- Deine Einsätze (Startseite) ---------- */
@@ -850,8 +1049,9 @@ function updateMyBets(t){
   const act=[];
   for(const key of Object.keys(S.bets)){
     const b=S.bets[key]; if(b.done)continue;
-    const [i,c]=key.split(":").map(Number); if(!(i>=0&&i<N))continue;
-    const T=times(i,t); if(T.key!==key)continue;
+    const [i,c]=key.split(":").map(Number);
+    if(!((i>=0&&i<N)||i===RND||i===JP||i===PRIV))continue;
+    const T=times(i,t); if(!T||T.key!==key)continue;
     act.push({i,T});
   }
   act.sort((a,b)=>a.T.tGo-b.T.tGo);
@@ -862,15 +1062,261 @@ function updateMyBets(t){
     row.innerHTML="";
     for(const a of act){
       const el=document.createElement("div"); el.className="mybet";
-      el.innerHTML='<span class="s">'+fmtStakeShort(STAKES[a.i])+' €</span><span class="p" data-p="'+a.T.key+'">–</span><span class="c" data-c="'+a.T.key+'">–</span>';
-      el.addEventListener("click",()=>navigate("detail",a.i));
+      const lbl=a.i===RND?"🎲 5 €":a.i===JP?"🏆 10 €":a.i===PRIV?"👥 "+fmtStakeShort(stakeOf(PRIV))+" €":fmtStakeShort(STAKES[a.i])+" €";
+      el.innerHTML='<span class="s">'+lbl+'</span><span class="p" data-p="'+a.T.key+'">–</span><span class="c" data-c="'+a.T.key+'">–</span>';
+      el.addEventListener("click",()=>{ a.i===RND?navigate("random"):a.i===JP?navigate("jack"):a.i===PRIV?navigate("priv"):navigate("detail",a.i); });
       row.appendChild(el);
     }
   }
   for(const a of act){
     const p=row.querySelector('[data-p="'+a.T.key+'"]'),c=row.querySelector('[data-c="'+a.T.key+'"]');
     if(p)p.textContent=fmtEUR(potOf(a.i,a.T,t));
-    if(c){ const d=a.T.tGo-t; c.textContent="GO in "+mmss(d); c.classList.toggle("hot",d<15000); }
+    if(c){
+      const d=a.T.tGo-t;
+      if(a.i===RND){ c.textContent="läuft …"; c.classList.add("hot"); }
+      else{ c.textContent="GO in "+(d>3600000?fmtLong(d):mmss(d)); c.classList.toggle("hot",d<15000); }
+    }
+  }
+}
+
+/* ---------- Start-Menü ---------- */
+let jpBuilt=false;
+function updateMenu(t){
+  const TJ=timesJp(t);
+  const jb=$("#jp-banner");
+  if(jb){
+    if(!jpBuilt){
+      jpBuilt=true;
+      jb.innerHTML='<div class="j-top"><div><div class="eyebrow" style="margin:0 0 6px;color:var(--gold-dim)">🏆 Jackpot · 1× täglich · '+fmtEUR(JP_STAKE)+'</div>'+
+        '<div class="j-title">JACKPOT</div><div class="j-when" id="jb-when">–</div></div>'+
+        '<div class="j-count" id="jb-count">–</div></div>'+
+        '<div class="j-sub"><div class="j-pot">Pot: <b id="jb-pot">–</b> · <span id="jb-pl">–</span> Spieler</div>'+
+        '<button class="j-cta" id="jb-cta">Dabei sein</button></div>';
+      $("#jb-cta").addEventListener("click",e=>{ e.stopPropagation(); const Tx=timesJp(now()); if(!S.bets[Tx.key])tryBet(JP); else navigate("jack"); });
+    }
+    const d=TJ.tGo-t;
+    const goDay=new Date(TJ.tGoBase);
+    const today=new Date(t).getDate()===goDay.getDate();
+    $("#jb-when").textContent=(today?"Heute":"Morgen")+" 20:15";
+    const cEl=$("#jb-count");
+    if(TJ.phase==="live"){cEl.textContent="LIVE";}
+    else if(TJ.phase==="result"){cEl.textContent="🏆";}
+    else cEl.textContent=fmtLong(d);
+    jb.classList.toggle("hot",d<900000&&d>-3200);
+    $("#jb-pot").textContent=fmtEUR(potOf(JP,TJ,t));
+    $("#jb-pl").textContent=joinedAt(JP,TJ,t)+(S.bets[TJ.key]?1:0);
+    $("#jb-cta").textContent=S.bets[TJ.key]?(S.bets[TJ.key].done?"Runde vorbei":"Du bist drin ✓"):TJ.phase==="open"?"Für "+fmtEUR(JP_STAKE)+" dabei sein":"Läuft gleich!";
+  }
+  const h=heroPick(t);
+  if(h){ const Tc=times(h.i,t); const dc=Tc.tGo-t;
+    $("#tc-sub").innerHTML="19 Buzzer · 1 € bis 20K € · Next GO in "+(dc<-3200?"…":'<span class="'+(dc<15000?"hot":"ok")+'">'+mmss(Math.max(0,dc))+"</span>"); }
+  const TR=timesRnd(t);
+  $("#tr-sub").innerHTML=fmtEUR(RND_STAKE)+" fix · GO irgendwann in 5 min · Pot <b>"+fmtEUR(potOf(RND,TR,t))+"</b>";
+  if(S.private){
+    const TP=timesPriv(t);
+    if(TP)$("#tp-sub").innerHTML=TP.phase==="result"?'<span class="ok">Runde gelaufen 🏆</span>':'<span class="ok">Läuft</span> · GO in '+mmss(TP.tGo-t)+" · Pot <b>"+fmtEUR(potOf(PRIV,TP,t))+"</b>";
+  }else{
+    $("#tp-sub").textContent="Eigener Buzzer nur für Freunde";
+  }
+  updateMyBets(t);
+}
+
+/* ---------- Chat-Baustein für Spezial-Views ---------- */
+function chatBlock(pfx,label){
+  return '<div class="eyebrow" style="margin-top:22px"><span class="dot"></span> '+label+"</div>"+
+    '<div id="'+pfx+'-chat" class="feed"></div>'+
+    '<div class="chatrow"><input id="'+pfx+'-input" maxlength="80" placeholder="Schreib was …" autocomplete="off">'+
+    '<button id="'+pfx+'-send"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button></div>';
+}
+function wireChat(pfx,idx){
+  const send=()=>{
+    const inp=$("#"+pfx+"-input"),v=inp.value.trim();
+    if(!v)return;
+    pushChat(idx,{type:"user",name:S.profile.name,text:v});
+    inp.value="";
+  };
+  $("#"+pfx+"-send").addEventListener("click",send);
+  $("#"+pfx+"-input").addEventListener("keydown",e=>{if(e.key==="Enter")send();});
+  const chat=$("#"+pfx+"-chat");
+  if(chats[idx].length===0&&idx!==PRIV)seedChat(idx);
+  for(const m of chats[idx].slice(-40))chat.appendChild(msgNode(m,"chat"));
+  chat.scrollTop=chat.scrollHeight;
+}
+
+/* ---------- Random-Buzzer ---------- */
+const rdRefs={};
+function renderRandom(){
+  views.random.innerHTML=
+    '<div class="backrow"><button class="backbtn" id="rd-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+
+    '<div class="vtitle">🎲 Random</div><div id="d-mode">Winner takes all</div></div>'+
+    '<div class="explain">Fester Einsatz '+fmtEUR(RND_STAKE)+' — der Buzzer geht <b style="color:var(--text)">irgendwann in den nächsten 5 Minuten</b> los. Niemand kennt den Moment. Sobald du drin bist, bleib bereit: Jeder Tap vor dem GO ist ein Fehlstart.</div>'+
+    '<div id="d-stage"><button class="buzzer standalone" id="rd-buzzer"><span class="b1"></span><span class="b2"></span></button>'+
+    '<div id="d-stats">'+
+      '<div class="dstat"><div class="v gold" id="rd-pot">–</div><div class="k">Pot</div></div>'+
+      '<div class="dstat"><div class="v" id="rd-pl">–</div><div class="k">Spieler</div></div>'+
+      '<div class="dstat"><div class="v" id="rd-st">🎲</div><div class="k" id="rd-stk">Status</div></div>'+
+    "</div></div>"+
+    chatBlock("rd","Money-Chat · Random");
+  $("#rd-back").addEventListener("click",()=>navigate("menu"));
+  rdRefs.buzzer=$("#rd-buzzer"); rdRefs.b1=rdRefs.buzzer.querySelector(".b1"); rdRefs.b2=rdRefs.buzzer.querySelector(".b2");
+  rdRefs.pot=$("#rd-pot"); rdRefs.pl=$("#rd-pl"); rdRefs.st=$("#rd-st"); rdRefs.lastBtn=null;
+  betGuard=performance.now()+400;
+  rdRefs.buzzer.addEventListener("click",()=>tryBet(RND));
+  wireChat("rd",RND);
+}
+function updateRandom(t){
+  if(currentView!=="random")return;
+  const T=timesRnd(t);
+  if(rdRefs.pot)rdRefs.pot.textContent=fmtEUR(potOf(RND,T,t));
+  if(rdRefs.pl)rdRefs.pl.textContent=joinedAt(RND,T,t)+(S.bets[T.key]?1:0);
+  if(rdRefs.st){
+    if(T.phase==="result"){rdRefs.st.textContent="🏆";}
+    else if(T.phase==="live"){rdRefs.st.textContent="GO!";rdRefs.st.className="v hot";}
+    else{rdRefs.st.textContent="🎲";rdRefs.st.className="v";}
+  }
+  const joined=!!S.bets[T.key]&&!S.bets[T.key].done;
+  const bKey=T.phase+"|"+joined;
+  if(rdRefs.lastBtn!==bKey){
+    rdRefs.lastBtn=bKey;
+    rdRefs.buzzer.className="buzzer standalone";
+    if(T.phase==="result"){ rdRefs.buzzer.className+=" locked"; rdRefs.b1.textContent="🏆"; rdRefs.b2.textContent=resolveRound(RND,T.c).winner; }
+    else if(joined){ rdRefs.buzzer.className+=" joined"; rdRefs.b1.textContent="DRIN ✓"; rdRefs.b2.textContent="BLEIB BEREIT"; }
+    else{ rdRefs.b1.textContent=fmtEUR(RND_STAKE); rdRefs.b2.textContent="TIPPEN = EINSATZ"; }
+  }
+}
+
+/* ---------- Jackpot ---------- */
+const jkRefs={};
+function renderJack(){
+  views.jack.innerHTML=
+    '<div class="backrow"><button class="backbtn" id="jk-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+
+    '<div class="vtitle" style="color:var(--gold)">🏆 Jackpot</div><div id="d-mode">1× täglich · WTA</div></div>'+
+    '<div class="explain">Jeden Tag um <b style="color:var(--text)">20:15</b> geht der Jackpot-Buzzer los. Einsatz '+fmtEUR(JP_STAKE)+', der Pot wächst den ganzen Tag. Einsätze schließen 15 Sekunden vor dem Start.</div>'+
+    '<div id="d-stage"><button class="buzzer standalone goldb" id="jk-buzzer"><span class="b1"></span><span class="b2"></span></button>'+
+    '<div id="d-stats">'+
+      '<div class="dstat"><div class="v gold" id="jk-pot">–</div><div class="k">Pot</div></div>'+
+      '<div class="dstat"><div class="v" id="jk-pl">–</div><div class="k">Spieler</div></div>'+
+      '<div class="dstat"><div class="v" id="jk-cd">–</div><div class="k" id="jk-cdk">Start in</div></div>'+
+    "</div></div>"+
+    chatBlock("jp","Money-Chat · Jackpot");
+  $("#jk-back").addEventListener("click",()=>navigate("menu"));
+  jkRefs.buzzer=$("#jk-buzzer"); jkRefs.b1=jkRefs.buzzer.querySelector(".b1"); jkRefs.b2=jkRefs.buzzer.querySelector(".b2");
+  jkRefs.pot=$("#jk-pot"); jkRefs.pl=$("#jk-pl"); jkRefs.cd=$("#jk-cd"); jkRefs.lastBtn=null;
+  betGuard=performance.now()+400;
+  jkRefs.buzzer.addEventListener("click",()=>tryBet(JP));
+  wireChat("jp",JP);
+}
+function updateJack(t){
+  if(currentView!=="jack")return;
+  const T=timesJp(t);
+  if(jkRefs.pot)jkRefs.pot.textContent=fmtEUR(potOf(JP,T,t));
+  if(jkRefs.pl)jkRefs.pl.textContent=joinedAt(JP,T,t)+(S.bets[T.key]?1:0);
+  const d=T.tGo-t;
+  if(jkRefs.cd){
+    if(T.phase==="live"){jkRefs.cd.textContent="LIVE";jkRefs.cd.className="v hot";}
+    else if(T.phase==="result"){jkRefs.cd.textContent="🏆";jkRefs.cd.className="v";}
+    else{jkRefs.cd.textContent=fmtLong(d);jkRefs.cd.className="v"+(d<900000?" hot":"");}
+  }
+  const joined=!!S.bets[T.key]&&!S.bets[T.key].done;
+  const bKey=T.phase+"|"+joined;
+  if(jkRefs.lastBtn!==bKey){
+    jkRefs.lastBtn=bKey;
+    jkRefs.buzzer.className="buzzer standalone goldb";
+    if(T.phase==="result"){ jkRefs.buzzer.className+=" locked"; jkRefs.b1.textContent="🏆"; jkRefs.b2.textContent=resolveRound(JP,T.c).winner; }
+    else if(joined){ jkRefs.buzzer.className="buzzer standalone joined"; jkRefs.b1.textContent="DRIN ✓"; jkRefs.b2.textContent="HEUTE 20:15"; }
+    else if(T.phase==="open"){ jkRefs.b1.textContent=fmtEUR(JP_STAKE); jkRefs.b2.textContent="TIPPEN = EINSATZ"; }
+    else{ jkRefs.buzzer.className+=" locked"; jkRefs.b1.textContent="🔒"; jkRefs.b2.textContent="EINSÄTZE ZU"; }
+  }
+}
+
+/* ---------- Privater Buzzer ---------- */
+const pvRefs={};
+let pvStake=10,pvMin=5;
+function renderPriv(){
+  if(!S.private){
+    views.priv.innerHTML=
+      '<div class="backrow"><button class="backbtn" id="pv-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+
+      '<div class="vtitle">👥 Privater Buzzer</div></div>'+
+      '<div class="explain">Euer eigener Buzzer — nur du und deine Freunde, euer Pot. Wähl den Einsatz und wann es losgeht, dann teil den Link in eurer Gruppe.</div>'+
+      '<div class="eyebrow">Einsatz pro Person</div><div class="choice" id="pv-stakes"></div>'+
+      '<div class="eyebrow">Start in</div><div class="choice" id="pv-mins"></div>'+
+      '<button class="wide-btn" id="pv-create">Buzzer erstellen — '+fmtEUR(pvStake)+" Einsatz</button>"+
+      '<div class="pv-note">Demo: Deine Freunde werden simuliert. Echte Einladungslinks kommen mit dem Server-Teil.</div>';
+    $("#pv-back").addEventListener("click",()=>navigate("menu"));
+    const stakes=[1,5,10,20,50,100],mins=[2,5,10];
+    const sBox=$("#pv-stakes"),mBox=$("#pv-mins");
+    stakes.forEach(v=>{ const b=document.createElement("button"); b.textContent=fmtEUR(v); if(v===pvStake)b.classList.add("sel");
+      b.addEventListener("click",()=>{pvStake=v;sBox.querySelectorAll("button").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");$("#pv-create").textContent="Buzzer erstellen — "+fmtEUR(v)+" Einsatz";}); sBox.appendChild(b); });
+    mins.forEach(v=>{ const b=document.createElement("button"); b.textContent=v+" min"; if(v===pvMin)b.classList.add("sel");
+      b.addEventListener("click",()=>{pvMin=v;mBox.querySelectorAll("button").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");}); mBox.appendChild(b); });
+    $("#pv-create").addEventListener("click",()=>{
+      if(S.balance<pvStake){ toast("Nicht genug Guthaben — lad kurz auf"); openTopup(); return; }
+      const t=now();
+      S.private={stake:pvStake,createdAt:t,startAt:t+pvMin*60000};
+      chats[PRIV]=[];
+      const T=timesPriv(t);
+      S.balance-=pvStake; S.stats.net-=pvStake;
+      S.bets[T.key]={stake:pvStake,t,done:false};
+      save(); syncMoney();
+      pushChat(PRIV,{type:"sys",text:"Privater Buzzer erstellt — Einsatz "+fmtEUR(pvStake)+", GO in "+pvMin+" min"});
+      pushChat(PRIV,{type:"join",name:S.profile.name,amt:pvStake,extra:0});
+      renderPriv();
+      toast("Dein privater Buzzer läuft — lad deine Freunde ein!");
+    });
+    return;
+  }
+  const T=timesPriv(now());
+  views.priv.innerHTML=
+    '<div class="backrow"><button class="backbtn" id="pv-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+
+    '<div class="vtitle">👥 Privater Buzzer</div><div id="d-mode">'+fmtEUR(S.private.stake)+" · WTA</div></div>"+
+    '<div id="d-stage"><button class="buzzer standalone" id="pv-buzzer"><span class="b1"></span><span class="b2"></span></button>'+
+    '<div id="d-stats">'+
+      '<div class="dstat"><div class="v gold" id="pv-pot">–</div><div class="k">Pot</div></div>'+
+      '<div class="dstat"><div class="v" id="pv-pl">–</div><div class="k">Freunde drin</div></div>'+
+      '<div class="dstat"><div class="v" id="pv-cd">–</div><div class="k" id="pv-cdk">GO in</div></div>'+
+    "</div></div>"+
+    '<button class="wide-btn" id="pv-share" style="margin-top:16px">📤 Einladungslink teilen</button>'+
+    '<button class="wide-btn ghost" id="pv-cancel">Abbrechen — Einsatz zurück</button>'+
+    chatBlock("pv","Gruppen-Chat");
+  $("#pv-back").addEventListener("click",()=>navigate("menu"));
+  pvRefs.buzzer=$("#pv-buzzer"); pvRefs.b1=pvRefs.buzzer.querySelector(".b1"); pvRefs.b2=pvRefs.buzzer.querySelector(".b2");
+  pvRefs.pot=$("#pv-pot"); pvRefs.pl=$("#pv-pl"); pvRefs.cd=$("#pv-cd"); pvRefs.lastBtn=null;
+  $("#pv-share").addEventListener("click",()=>{
+    const txt="Komm in meinen BUZZER! "+fmtEUR(S.private.stake)+" Einsatz, der Schnellste holt alles: https://august-schoen.github.io/buzzer-demo/";
+    if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); }
+    else if(navigator.clipboard){ navigator.clipboard.writeText(txt); toast("Link kopiert — ab in die Gruppe damit (Demo)"); }
+    else toast("Demo — echter Einladungslink kommt mit dem Server");
+  });
+  $("#pv-cancel").addEventListener("click",()=>{
+    const t=now(),Tx=timesPriv(t);
+    if(Tx&&t<Tx.tClose){
+      const bet=S.bets[Tx.key];
+      if(bet&&!bet.done){ S.balance+=bet.stake; S.stats.net+=bet.stake; }
+      delete S.bets[Tx.key];
+      S.private=null; save(); syncMoney();
+      toast("Privater Buzzer abgebrochen — Einsatz zurück");
+      renderPriv();
+    }else toast("Zu spät — die Runde läuft schon!");
+  });
+  wireChat("pv",PRIV);
+}
+function updatePriv(t){
+  if(currentView!=="priv"||!S.private)return;
+  const T=timesPriv(t); if(!T)return;
+  if(pvRefs.pot)pvRefs.pot.textContent=fmtEUR(potOf(PRIV,T,t));
+  if(pvRefs.pl)pvRefs.pl.textContent=String(joinedAt(PRIV,T,t));
+  const d=T.tGo-t;
+  if(pvRefs.cd){
+    if(T.phase==="live"){pvRefs.cd.textContent="LIVE";pvRefs.cd.className="v hot";}
+    else if(T.phase==="result"){pvRefs.cd.textContent="🏆";pvRefs.cd.className="v";}
+    else{pvRefs.cd.textContent=mmss(d);pvRefs.cd.className="v"+(d<15000?" hot":"");}
+  }
+  const bKey=T.phase;
+  if(pvRefs.lastBtn!==bKey){
+    pvRefs.lastBtn=bKey;
+    pvRefs.buzzer.className="buzzer standalone joined";
+    if(T.phase==="result"){ pvRefs.buzzer.className="buzzer standalone locked"; pvRefs.b1.textContent="🏆"; pvRefs.b2.textContent=resolveRound(PRIV,T.c).winner; }
+    else{ pvRefs.b1.textContent="DRIN ✓"; pvRefs.b2.textContent="GO UM "+clock(T.tGoBase); }
   }
 }
 
@@ -893,7 +1339,7 @@ function renderDetail(i){
     '<div id="d-stage">'+
       '<div id="ringwrap"><svg id="ring" viewBox="0 0 100 100">'+
       '<circle class="track" cx="50" cy="50" r="47.5"/><circle class="prog" cx="50" cy="50" r="47.5" stroke-dasharray="298.4" stroke-dashoffset="0"/></svg>'+
-      '<button id="buzzer"><span class="b1"></span><span class="b2"></span></button></div>'+
+      '<button id="buzzer" class="buzzer"><span class="b1"></span><span class="b2"></span></button></div>'+
       '<div id="d-stats">'+
         '<div class="dstat"><div class="v gold" id="d-pot">–</div><div class="k">Pot</div></div>'+
         '<div class="dstat"><div class="v" id="d-pl">–</div><div class="k">Spieler</div></div>'+
@@ -947,8 +1393,8 @@ document.addEventListener("click",e=>{
 let betGuard=0;
 function tryBet(i){
   if(performance.now()<betGuard)return; // Schutz gegen versehentliche Doppel-Taps direkt nach dem Öffnen
-  const t=now(),T=times(i,t),s=STAKES[i];
-  if(S.bets[T.key])return;
+  const t=now(),T=times(i,t),s=stakeOf(i);
+  if(!T||S.bets[T.key])return;
   if(T.phase!=="open"){ toast("Einsätze sind zu — nächste Runde in "+mmss(T.end-t)); return; }
   if(S.balance<s){ toast("Nicht genug Guthaben — lad kurz auf"); openTopup(); return; }
   S.balance-=s; S.stats.net-=s;
@@ -957,12 +1403,13 @@ function tryBet(i){
   pushBoth(i,{type:"join",name:S.profile.name,amt:s,extra:0});
   beep(660,.09,"sine",.1); beep(990,.12,"sine",.09,.06);
   if(navigator.vibrate)navigator.vibrate(12);
-  toast("Du bist drin! GO in "+mmss(T.tGo-t));
+  if(i===RND)toast("Du bist drin — bleib bereit, GO kann jeden Moment kommen ⚡");
+  else toast("Du bist drin! GO in "+mmss(T.tGo-t));
 }
 function seedChat(i){
-  const t=now(),T=times(i,t);
+  const t=now(),T=times(i,t); if(!T)return;
   const nJoin=Math.min(joinedAt(i,T,t),5);
-  for(let k=0;k<nJoin;k++)chats[i].push({t:t-(nJoin-k)*40000-Math.random()*20000,type:"join",name:pick(NAMES),amt:STAKES[i],extra:Math.random()<0.4?Math.floor(Math.random()*6):0});
+  for(let k=0;k<nJoin;k++)chats[i].push({t:t-(nJoin-k)*40000-Math.random()*20000,type:"join",name:pick(NAMES),amt:stakeOf(i),extra:Math.random()<0.4?Math.floor(Math.random()*6):0});
   chats[i].push({t:t-15000,type:"hype",name:pick(NAMES),text:pick(HYPE)});
 }
 function updateDetail(t){
@@ -987,22 +1434,27 @@ function updateDetail(t){
   const bKey=T.phase+"|"+joined+"|"+(T.phase==="result"?resolveRound(i,T.c).winner:"");
   if(dRefs.lastBtn!==bKey){
     dRefs.lastBtn=bKey;
-    dRefs.buzzer.className="";
+    dRefs.buzzer.className="buzzer";
     if(T.phase==="open"&&!joined){ dRefs.b1.textContent=fmtEUR(STAKES[i]); dRefs.b2.textContent="TIPPEN = EINSATZ"; }
-    else if(joined){ dRefs.buzzer.className="joined"; dRefs.b1.textContent="DRIN ✓"; dRefs.b2.textContent="GO in Kürze"; }
-    else if(T.phase==="result"){ dRefs.buzzer.className="locked"; dRefs.b1.textContent="🏆"; dRefs.b2.textContent=resolveRound(i,T.c).winner; }
-    else{ dRefs.buzzer.className="locked"; dRefs.b1.textContent="🔒"; dRefs.b2.textContent="EINSÄTZE ZU"; }
+    else if(joined){ dRefs.buzzer.className="buzzer joined"; dRefs.b1.textContent="DRIN ✓"; dRefs.b2.textContent="GO in Kürze"; }
+    else if(T.phase==="result"){ dRefs.buzzer.className="buzzer locked"; dRefs.b1.textContent="🏆"; dRefs.b2.textContent=resolveRound(i,T.c).winner; }
+    else{ dRefs.buzzer.className="buzzer locked"; dRefs.b1.textContent="🔒"; dRefs.b2.textContent="EINSÄTZE ZU"; }
   }
 }
 
 /* ---------- Overlay Pre-GO Anzeige (rAF) ---------- */
 function updateOverlay(t){
   if(!engaged||engaged.state!=="wait")return;
-  const T=times(engaged.i,t);
+  const T=times(engaged.i,t); if(!T)return;
   const big=$("#ov-big"),sub=$("#ov-sub"),pot=$("#ov-pot"),pl=$("#ov-pl");
   if(pot)pot.textContent=fmtEUR(potOf(engaged.i,T,t));
   if(pl)pl.textContent=(joinedAt(engaged.i,T,t)+1)+" Spieler im Pot";
   if(!big)return;
+  if(engaged.i===RND){
+    big.className="ov-big dots"; big.textContent="• • •";
+    if(sub)sub.textContent="Kann JEDEN Moment kommen — bleib bereit!";
+    return;
+  }
   if(T.phase==="open"||T.phase==="locked"){
     big.className="ov-big"; big.textContent=mmss(T.tGoBase-t);
     if(sub)sub.textContent=T.phase==="open"?"Einsätze schließen gleich":"Bereit machen …";
@@ -1053,7 +1505,7 @@ function renderProfile(){
   const wr=st.plays?Math.round(st.wins/st.plays*100):0;
   const LB=lbLists();
   views.profile.innerHTML=
-    '<div class="backrow"><button class="backbtn" id="p-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button><div id="d-title">Profil</div></div>'+
+    '<div class="backrow"><button class="backbtn" id="p-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="vtitle">Profil</div></div>'+
     '<div class="p-name">'+esc(S.profile.name)+'</div><div class="p-bal">'+fmtEUR(S.balance)+"</div>"+
     '<div class="p-stats">'+
       '<div class="dstat"><div class="v">'+st.plays+'</div><div class="k">Runden</div></div>'+
@@ -1066,15 +1518,24 @@ function renderProfile(){
     '<div class="eyebrow">🏆 Top-Gewinner heute</div>'+
     '<div class="lb">'+lbHtml(LB.rich,"rich")+"</div>"+
     '<div class="p-rows">'+
+      '<div class="p-row"><span>Benachrichtigungen<span class="sub">Erinnert dich, wenn deine Buzzer starten (App im Hintergrund offen)</span></span><button class="switch'+(S.settings.notif?" on":"")+'" id="p-notif"></button></div>'+
       '<div class="p-row"><span>Demo-Tempo<span class="sub">Runde alle 4 min statt 30 min</span></span><button class="switch'+(S.settings.tempo==="demo"?" on":"")+'" id="p-tempo"></button></div>'+
       '<div class="p-row"><span>Sound</span><button class="switch'+(S.settings.sound?" on":"")+'" id="p-sound"></button></div>'+
       '<div class="p-row"><button class="danger" style="font-weight:700" id="p-reset">Demo zurücksetzen</button></div>'+
     "</div>"+
     '<div class="p-foot">BUZZER MVP · Demo · Kein echtes Geld · 18+</div>';
-  $("#p-back").addEventListener("click",()=>navigate("home"));
+  $("#p-back").addEventListener("click",()=>navigate("menu"));
+  $("#p-notif").addEventListener("click",()=>{
+    if(S.settings.notif){ S.settings.notif=false; save(); renderProfile(); return; }
+    if(!("Notification" in window)){ toast("Auf diesem Gerät/Browser nicht verfügbar"); return; }
+    Notification.requestPermission().then(p=>{
+      if(p==="granted"){ S.settings.notif=true; save(); renderProfile(); toast("Benachrichtigungen an ✓"); }
+      else toast("Vom Browser blockiert — in den Einstellungen erlauben");
+    });
+  });
   $("#p-tempo").addEventListener("click",()=>{
     for(const key of Object.keys(S.bets)){ const b=S.bets[key]; if(!b.done){S.balance+=b.stake;S.stats.net+=b.stake;} }
-    S.bets={};
+    S.bets={}; S.private=null;
     S.settings.tempo=S.settings.tempo==="demo"?"real":"demo";
     save(); syncMoney(); renderProfile();
     toast(S.settings.tempo==="demo"?"Demo-Tempo: Runden alle 4 min":"Echtzeit: Runden alle 30 min");
@@ -1219,8 +1680,10 @@ function seedFeed(){
   for(const key of Object.keys(S.bets)){
     const b=S.bets[key];
     const [i,c]=key.split(":").map(Number);
-    if(i>=N||!Number.isFinite(c)){ delete S.bets[key]; continue; }
+    const valid=(i>=0&&i<N)||i===RND||i===JP||i===PRIV;
+    if(!valid||!Number.isFinite(c)){ delete S.bets[key]; continue; }
     const T=times(i,t);
+    if(!T){ if(b.done)delete S.bets[key]; continue; }
     if(b.done&&T.c>c)delete S.bets[key];
   }
   save();
@@ -1228,25 +1691,25 @@ function seedFeed(){
 
 /* ---------- rAF ---------- */
 function raf(){
-  const t=now();
-  if(currentView==="home")updateHome(t);
-  if(currentView==="detail")updateDetail(t);
-  updateOverlay(t);
+  updateViews(now());
   requestAnimationFrame(raf);
 }
 
 /* ---------- Debug ---------- */
 window.BZ={
   get state(){return S;},
+  get offset(){return timeOffset;},
+  now,
   times,
   feed:()=>FEED.slice(-6).map(m=>m.type+":"+(m.name||m.text||"")+":"+(m.amt||"")),
   ov:()=>({on:ovEl.classList.contains("on"),go:ovEl.classList.contains("go-bg"),state:engaged?engaged.state:null}),
   jump(i,sec){
     const t=now(); let T=times(i,t);
-    let target=T.phase==="result"?times(i,T.end+10).tGo:T.tGo;
-    if(target-(sec*1000)<t)target+=period();
+    if(!T)return "kein aktiver Buzzer "+i;
+    let target=T.phase==="result"?(times(i,T.end+10)?times(i,T.end+10).tGo:T.tGo):T.tGo;
+    if(target-(sec*1000)<t&&periodOf(i)>0)target+=periodOf(i);
     timeOffset+=Math.round(target-sec*1000-t);
-    return "ok — "+sec+"s vor GO von Buzzer "+STAKES[i]+"€";
+    return "ok — "+sec+"s vor GO von Buzzer "+(i>=100?labelOf(i):STAKES[i]+"€");
   }
 };
 
