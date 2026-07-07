@@ -198,7 +198,7 @@ input{font:inherit;color:inherit}
 .pp-row .amt{color:var(--gold);font-weight:900;font-variant-numeric:tabular-nums}
 .pp-note{font-size:11px;color:var(--muted2);margin-top:6px;line-height:1.5}
 #d-chatbox{margin-top:22px}
-#d-chat{max-height:38vh;overflow-y:auto}
+#d-chat,.chat-box{height:34vh;overflow-y:auto;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
 #view-detail.on,#view-random.on,#view-jack.on,#view-priv.on{padding-bottom:calc(100px + var(--sab))}
 .chatrow{position:fixed;left:0;right:0;bottom:0;z-index:40;max-width:520px;margin:0 auto;
   display:flex;gap:8px;padding:10px 14px calc(12px + var(--sab));
@@ -731,6 +731,12 @@ function tick(){
   const hypeIdx=currentView==="detail"?currentDetail:currentView==="random"?rdPool:currentView==="jack"?JP:currentView==="priv"&&S.private?PRIV:null;
   if(hypeIdx!=null&&Math.random()<0.028)
     pushChat(hypeIdx,{type:"hype",name:hypeIdx===PRIV?pick(FRIENDS):pick(NAMES),text:pick(HYPE)});
+  // Jackpot & Random: Chat lebendig halten, solange offen (Joins kommen dort sonst nur selten durch)
+  if(hypeIdx!=null&&(hypeIdx===JP||isRnd(hypeIdx))&&Math.random()<0.055){
+    const Th=times(hypeIdx,t);
+    if(Th&&Th.phase==="open")
+      pushChat(hypeIdx,{type:"join",name:pick(NAMES),amt:stakeOf(hypeIdx),extra:Math.random()<0.3?1+Math.floor(Math.random()*3):0});
+  }
   // UI auch ohne rAF aktuell halten (Energiesparmodus / gedrosselte Tabs)
   updateViews(t);
 }
@@ -1174,7 +1180,7 @@ function updateMenu(t){
 /* ---------- Chat-Baustein für Spezial-Views ---------- */
 function chatBlock(pfx,label){
   return '<div class="eyebrow" style="margin-top:22px"><span class="dot"></span> '+label+"</div>"+
-    '<div id="'+pfx+'-chat" class="feed"></div>'+
+    '<div id="'+pfx+'-chat" class="feed chat-box"></div>'+
     '<div class="chatrow"><input id="'+pfx+'-input" maxlength="80" placeholder="Schreib was …" autocomplete="off">'+
     '<button id="'+pfx+'-send"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button></div>';
 }
