@@ -44,9 +44,11 @@ input{font:inherit;color:inherit}
 #topbar .right{display:flex;align-items:center;gap:16px}
 #balance-pill{display:flex;align-items:baseline;gap:6px;color:var(--gold);font-weight:800;font-size:16px;font-variant-numeric:tabular-nums}
 #balance-pill .plus{font-size:14px;font-weight:900;color:var(--muted)}
-#btn-profile{color:var(--muted);display:flex;align-items:center}
+#btn-profile,#btn-boards{color:var(--muted);display:flex;align-items:center}
 #btn-profile.on{color:var(--violet)}
+#btn-boards.on{color:var(--gold)}
 #btn-profile svg{width:22px;height:22px}
+#btn-boards svg{width:21px;height:21px}
 
 /* ---------- main / views ---------- */
 #main{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-width:thin}
@@ -62,13 +64,14 @@ input{font:inherit;color:inherit}
 /* ---------- hero (Next up oben + Noch-offen unten) ---------- */
 .hero{border:1px solid var(--line);padding:18px 18px 16px;margin-bottom:22px;cursor:pointer;background:var(--bg)}
 .hero.hot{border-color:var(--red)}
+#hero2-wrap{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:22px}
+@media(min-width:760px){#hero2-wrap{grid-template-columns:1fr 1fr 1fr}}
 #hero2.hot{border-color:var(--green)}
 .hero .h-row{display:flex;justify-content:space-between;align-items:flex-start}
 .hero .h-stake{font-size:42px;font-weight:900;letter-spacing:-1.5px;line-height:1}
 .hero .h-stake small{font-size:18px;font-weight:800;color:var(--muted)}
 .hero .h-count{font-size:38px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-1px;line-height:1;text-align:right;color:var(--violet)}
 .hero .h-count.soon{color:var(--red)}
-#hero2 .h-count.soon{color:var(--green)}
 .hero .h-sub{display:flex;justify-content:space-between;align-items:flex-end;margin-top:14px}
 .hero .h-pot{font-size:14px;color:var(--muted);font-weight:600}
 .hero .h-pot b{color:var(--gold);font-size:18px;font-weight:900;font-variant-numeric:tabular-nums}
@@ -134,6 +137,7 @@ input{font:inherit;color:inherit}
 .card .foot{display:flex;justify-content:space-between;align-items:center;margin-top:7px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .card .foot .st{font-weight:800}
 .card .foot .st.hot{color:var(--red);animation:blink 1s infinite}
+.card .foot .st.ok{color:var(--green)}
 .card .foot .st.live{color:var(--red)}
 .card .foot .st.win{color:var(--gold-dim);max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card .bar{position:absolute;left:0;bottom:0;height:2px;background:var(--violet-dim);width:0%}
@@ -333,6 +337,9 @@ input{font:inherit;color:inherit}
     <div class="logo">BU<span class="zz">ZZ</span>ER <em class="demo-chip">DEMO</em></div>
     <div class="right">
       <button id="balance-pill" aria-label="Guthaben aufladen"><span id="bal-txt">0 €</span><span class="plus">+</span></button>
+      <button id="btn-boards" aria-label="Bestenlisten">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v6a5 5 0 0 1-10 0V4z"/><path d="M7 6H4a1 1 0 0 0-1 1c0 2.2 1.8 4 4 4M17 6h3a1 1 0 0 1 1 1c0 2.2-1.8 4-4 4"/></svg>
+      </button>
       <button id="btn-profile" aria-label="Profil">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-3.5 4.5-5 8-5s6.5 1.5 8 5"/></svg>
       </button>
@@ -374,7 +381,7 @@ input{font:inherit;color:inherit}
       <div class="eyebrow"><span class="dot"></span> Live — alle Klassisch-Einsätze</div>
       <div id="feed-classic" class="feed" style="height:212px;overflow-y:auto;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);margin-bottom:22px;scrollbar-width:none"></div>
       <div class="eyebrow">Next up — noch offen</div>
-      <div id="hero2" class="hero"></div>
+      <div id="hero2-wrap"><div id="hero2" class="card"></div></div>
       <div class="eyebrow">Alle Buzzer</div>
       <div id="grid"></div>
     </section>
@@ -384,6 +391,8 @@ input{font:inherit;color:inherit}
     <section id="view-jack" class="view"></section>
 
     <section id="view-priv" class="view"></section>
+
+    <section id="view-boards" class="view"></section>
 
     <section id="view-profile" class="view"></section>
 
@@ -532,10 +541,12 @@ function timesJp(t){
 function timesPriv(t){
   const pv=S.private; if(!pv)return null;
   const c=Math.floor(pv.createdAt/1000)%100000000;
-  const E=pv.startAt,start=pv.createdAt,end=E+45000;
+  const start=pv.createdAt;
+  const E=pv.startAt||start+604800000; // ohne Start-Kommando: Lobby wartet (quasi endlos offen)
+  const end=E+45000;
   const tClose=E-15000,tCount=E-12000,tGoBase=E-9000;
   const tGo=tGoBase+800+rng(seedOf(PRIV,c,11))()*1800;
-  return {i:PRIV,c,start,end,tClose,tCount,tGoBase,tGo,phase:phaseOf(t,tClose,tCount,tGoBase,tGo),key:PRIV+":"+c};
+  return {i:PRIV,c,start,end,tClose,tCount,tGoBase,tGo,phase:phaseOf(t,tClose,tCount,tGoBase,tGo),key:PRIV+":"+c,waiting:!pv.startAt};
 }
 function times(i,t){
   if(isRnd(i))return timesRnd(i,t);
@@ -912,11 +923,12 @@ ovEl.addEventListener("pointerdown",e=>{
 
 /* ---------- Views / Navigation ---------- */
 let currentView="menu",currentDetail=null;
-const views={menu:$("#view-menu"),home:$("#view-home"),random:$("#view-random"),jack:$("#view-jack"),priv:$("#view-priv"),profile:$("#view-profile"),detail:$("#view-detail")};
+const views={menu:$("#view-menu"),home:$("#view-home"),random:$("#view-random"),jack:$("#view-jack"),priv:$("#view-priv"),boards:$("#view-boards"),profile:$("#view-profile"),detail:$("#view-detail")};
 function navigate(v,arg){
   currentView=v;
   for(const k of Object.keys(views))views[k].classList.toggle("on",k===v);
   $("#btn-profile").classList.toggle("on",v==="profile");
+  $("#btn-boards").classList.toggle("on",v==="boards");
   if(v==="detail"){ currentDetail=arg; renderDetail(arg); }
   else currentDetail=null;
   if(v==="menu")renderFeed();
@@ -924,11 +936,13 @@ function navigate(v,arg){
   if(v==="random")renderRandom();
   if(v==="jack")renderJack();
   if(v==="priv")renderPriv();
+  if(v==="boards")renderBoards();
   if(v==="profile")renderProfile();
   updateViews(now());
   views[v].scrollTop=0; $("#main").scrollTop=0;
 }
 $("#btn-profile").addEventListener("click",()=>navigate(currentView==="profile"?"menu":"profile"));
+$("#btn-boards").addEventListener("click",()=>navigate(currentView==="boards"?"menu":"boards"));
 $("#c-back").addEventListener("click",()=>navigate("menu"));
 $("#tile-classic").addEventListener("click",()=>navigate("home"));
 $("#tile-random").addEventListener("click",()=>navigate("random"));
@@ -1014,6 +1028,17 @@ function updHeroCard(el,R,i,t){
   R.pl.textContent=joinedAt(i,T,t)+(S.bets[T.key]?1:0);
   R.cta.textContent=T.phase==="open"?(S.bets[T.key]?"Du bist drin ✓":"Mitmachen"):"Läuft gleich";
 }
+function buildHero2Card(el,i,R){
+  const s=STAKES[i];
+  el.innerHTML='<div class="tier">Noch offen'+(modeOf(s)==="top3"?" · Top 3":"")+"</div>"+
+    '<div class="stake">'+fmtStakeShort(s)+' <small>€</small></div>'+
+    '<div class="pot"><span>POT </span><span class="pv">–</span></div>'+
+    '<div class="foot"><span class="pl">–</span><span class="st">–</span></div>'+
+    '<div class="bar" style="background:var(--green)"></div>';
+  R.pv=el.querySelector(".pv"); R.pl=el.querySelector(".pl");
+  R.st=el.querySelector(".st"); R.bar=el.querySelector(".bar");
+  el.onclick=()=>navigate("detail",i);
+}
 function updateHome(t){
   const h=heroPick(t);
   if(!h)return;
@@ -1022,8 +1047,15 @@ function updateHome(t){
   const j=joinPick(t,heroI);
   const hero2El=$("#hero2");
   if(j&&hero2El){
-    if(hero2I!==j.i){ hero2I=j.i; buildHero(hero2El,j.i,hero2R); }
-    updHeroCard(hero2El,hero2R,hero2I,t);
+    if(hero2I!==j.i){ hero2I=j.i; buildHero2Card(hero2El,j.i,hero2R); }
+    const T2=times(hero2I,t);
+    const d2=T2.tGo-t;
+    hero2El.classList.toggle("hot",d2<15000);
+    hero2R.pv.textContent=fmtEUR(potOf(hero2I,T2,t));
+    hero2R.pl.textContent=(joinedAt(hero2I,T2,t)+(S.bets[T2.key]?1:0))+" 👤";
+    hero2R.st.textContent="GO in "+mmss(d2);
+    hero2R.st.className="st"+(d2<15000?" ok":"");
+    hero2R.bar.style.width=(clamp(1-d2/(T2.tGo-T2.start),0,1)*100).toFixed(1)+"%";
   }
   // cards
   for(let i=0;i<N;i++){
@@ -1085,6 +1117,7 @@ function updateMyBets(t){
     if(c){
       const d=a.T.tGo-t;
       if(isRnd(a.i)){ c.textContent="läuft …"; c.classList.add("hot"); }
+      else if(a.i===PRIV&&a.T.waiting){ c.textContent="wartet auf dein GO"; c.classList.remove("hot"); }
       else{ c.textContent="GO in "+(d>3600000?fmtLong(d):mmss(d)); c.classList.toggle("hot",d<15000); }
     }
   }
@@ -1128,7 +1161,10 @@ function updateMenu(t){
     :'1–100 € · <span class="hot">zur Zeit nicht verfügbar</span>';
   if(S.private){
     const TP=timesPriv(t);
-    if(TP)$("#tp-sub").innerHTML=TP.phase==="result"?'<span class="ok">Runde gelaufen 🏆</span>':'<span class="ok">Läuft</span> · GO in '+mmss(TP.tGo-t)+" · Pot <b>"+fmtEUR(potOf(PRIV,TP,t))+"</b>";
+    if(TP){
+      if(TP.waiting)$("#tp-sub").innerHTML='<span class="ok">Lobby offen</span> · du gibst das GO · Pot <b>'+fmtEUR(potOf(PRIV,TP,t))+"</b>";
+      else $("#tp-sub").innerHTML=TP.phase==="result"?'<span class="ok">Runde gelaufen 🏆</span>':'<span class="ok">Läuft</span> · GO in '+mmss(TP.tGo-t)+" · Pot <b>"+fmtEUR(potOf(PRIV,TP,t))+"</b>";
+    }
   }else{
     $("#tp-sub").textContent="Eigener Buzzer nur für Freunde";
   }
@@ -1255,41 +1291,38 @@ function updateJack(t){
 
 /* ---------- Privater Buzzer ---------- */
 const pvRefs={};
-let pvStake=10,pvMin=5;
+let pvStake=10;
 function renderPriv(){
   if(!S.private){
     views.priv.innerHTML=
       '<div class="backrow"><button class="backbtn" id="pv-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+
       '<div class="vtitle">👥 Privater Buzzer</div></div>'+
-      '<div class="explain">Euer eigener Buzzer — nur du und deine Freunde, euer Pot. Wähl den Einsatz und wann es losgeht, dann teil den Link in eurer Gruppe.</div>'+
+      '<div class="explain">Euer eigener Buzzer — nur du und deine Freunde, euer Pot. Einsatz wählen, Link teilen, warten bis alle drin sind. <b style="color:var(--text)">Du gibst das GO</b> — der Buzzer feuert dann ~30 Sekunden später.</div>'+
       '<div class="eyebrow">Einsatz pro Person</div><div class="choice" id="pv-stakes"></div>'+
-      '<div class="eyebrow">Start in</div><div class="choice" id="pv-mins"></div>'+
       '<button class="wide-btn" id="pv-create">Buzzer erstellen — '+fmtEUR(pvStake)+" Einsatz</button>"+
       '<div class="pv-note">Demo: Deine Freunde werden simuliert. Echte Einladungslinks kommen mit dem Server-Teil.</div>';
     $("#pv-back").addEventListener("click",()=>navigate("menu"));
-    const stakes=[1,5,10,20,50,100],mins=[2,5,10];
-    const sBox=$("#pv-stakes"),mBox=$("#pv-mins");
+    const stakes=[1,5,10,20,50,100];
+    const sBox=$("#pv-stakes");
     stakes.forEach(v=>{ const b=document.createElement("button"); b.textContent=fmtEUR(v); if(v===pvStake)b.classList.add("sel");
       b.addEventListener("click",()=>{pvStake=v;sBox.querySelectorAll("button").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");$("#pv-create").textContent="Buzzer erstellen — "+fmtEUR(v)+" Einsatz";}); sBox.appendChild(b); });
-    mins.forEach(v=>{ const b=document.createElement("button"); b.textContent=v+" min"; if(v===pvMin)b.classList.add("sel");
-      b.addEventListener("click",()=>{pvMin=v;mBox.querySelectorAll("button").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");}); mBox.appendChild(b); });
     $("#pv-create").addEventListener("click",()=>{
       if(S.balance<pvStake){ toast("Nicht genug Guthaben — lad kurz auf"); openTopup(); return; }
       const t=now();
-      S.private={stake:pvStake,createdAt:t,startAt:t+pvMin*60000};
+      S.private={stake:pvStake,createdAt:t,startAt:null};
       chats[PRIV]=[];
       const T=timesPriv(t);
       S.balance-=pvStake; S.stats.net-=pvStake;
       S.bets[T.key]={stake:pvStake,t,done:false};
       save(); syncMoney();
-      pushChat(PRIV,{type:"sys",text:"Privater Buzzer erstellt — Einsatz "+fmtEUR(pvStake)+", GO in "+pvMin+" min"});
+      pushChat(PRIV,{type:"sys",text:"Privater Buzzer erstellt — Einsatz "+fmtEUR(pvStake)+". Du gibst das GO!"});
       pushChat(PRIV,{type:"join",name:S.profile.name,amt:pvStake,extra:0});
       renderPriv();
-      toast("Dein privater Buzzer läuft — lad deine Freunde ein!");
+      toast("Lobby offen — lad deine Freunde ein und gib dann das GO!");
     });
     return;
   }
-  const T=timesPriv(now());
+  const waiting=!S.private.startAt;
   views.priv.innerHTML=
     '<div class="backrow"><button class="backbtn" id="pv-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+
     '<div class="vtitle">👥 Privater Buzzer</div><div id="d-mode">'+fmtEUR(S.private.stake)+" · WTA</div></div>"+
@@ -1299,29 +1332,44 @@ function renderPriv(){
       '<div class="dstat"><div class="v" id="pv-pl">–</div><div class="k">Freunde drin</div></div>'+
       '<div class="dstat"><div class="v" id="pv-cd">–</div><div class="k" id="pv-cdk">GO in</div></div>'+
     "</div></div>"+
-    '<button class="wide-btn" id="pv-share" style="margin-top:16px">📤 Einladungslink teilen</button>'+
-    '<button class="wide-btn ghost" id="pv-cancel">Abbrechen — Einsatz zurück</button>'+
+    (waiting
+      ?'<button class="wide-btn" id="pv-start" style="margin-top:16px;background:var(--green);color:#04140C">▶ START — GO kommt ~30 Sekunden später</button>'+
+       '<button class="wide-btn ghost" id="pv-share">📤 Einladungslink teilen</button>'+
+       '<button class="wide-btn ghost" id="pv-cancel">Abbrechen — Einsatz zurück</button>'
+      :'<button class="wide-btn ghost" id="pv-share" style="margin-top:16px">📤 Einladungslink teilen</button>')+
     chatBlock("pv","Gruppen-Chat");
   $("#pv-back").addEventListener("click",()=>navigate("menu"));
   pvRefs.buzzer=$("#pv-buzzer"); pvRefs.b1=pvRefs.buzzer.querySelector(".b1"); pvRefs.b2=pvRefs.buzzer.querySelector(".b2");
   pvRefs.pot=$("#pv-pot"); pvRefs.pl=$("#pv-pl"); pvRefs.cd=$("#pv-cd"); pvRefs.lastBtn=null;
+  if(waiting){
+    $("#pv-start").addEventListener("click",()=>{
+      if(!S.private||S.private.startAt)return;
+      S.private.startAt=now()+39000; // GO landet ~30 s nach dem Start-Kommando
+      save();
+      pushChat(PRIV,{type:"sys",text:"🚨 "+esc(S.profile.name)+" hat das GO gegeben — gleich geht's los!"});
+      renderPriv();
+      toast("GO kommt in ~30 Sekunden — Finger bereit ⚡");
+    });
+  }
   $("#pv-share").addEventListener("click",()=>{
     const txt="Komm in meinen BUZZER! "+fmtEUR(S.private.stake)+" Einsatz, der Schnellste holt alles: https://august-schoen.github.io/buzzer-demo/";
     if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); }
     else if(navigator.clipboard){ navigator.clipboard.writeText(txt); toast("Link kopiert — ab in die Gruppe damit (Demo)"); }
     else toast("Demo — echter Einladungslink kommt mit dem Server");
   });
-  $("#pv-cancel").addEventListener("click",()=>{
-    const t=now(),Tx=timesPriv(t);
-    if(Tx&&t<Tx.tClose){
-      const bet=S.bets[Tx.key];
-      if(bet&&!bet.done){ S.balance+=bet.stake; S.stats.net+=bet.stake; }
-      delete S.bets[Tx.key];
-      S.private=null; save(); syncMoney();
-      toast("Privater Buzzer abgebrochen — Einsatz zurück");
-      renderPriv();
-    }else toast("Zu spät — die Runde läuft schon!");
-  });
+  if(waiting){
+    $("#pv-cancel").addEventListener("click",()=>{
+      const t=now(),Tx=timesPriv(t);
+      if(Tx&&t<Tx.tClose){
+        const bet=S.bets[Tx.key];
+        if(bet&&!bet.done){ S.balance+=bet.stake; S.stats.net+=bet.stake; }
+        delete S.bets[Tx.key];
+        S.private=null; save(); syncMoney();
+        toast("Privater Buzzer abgebrochen — Einsatz zurück");
+        renderPriv();
+      }else toast("Zu spät — die Runde läuft schon!");
+    });
+  }
   wireChat("pv",PRIV);
 }
 function updatePriv(t){
@@ -1331,16 +1379,18 @@ function updatePriv(t){
   if(pvRefs.pl)pvRefs.pl.textContent=String(joinedAt(PRIV,T,t));
   const d=T.tGo-t;
   if(pvRefs.cd){
-    if(T.phase==="live"){pvRefs.cd.textContent="LIVE";pvRefs.cd.className="v hot";}
-    else if(T.phase==="result"){pvRefs.cd.textContent="🏆";pvRefs.cd.className="v";}
-    else{pvRefs.cd.textContent=mmss(d);pvRefs.cd.className="v"+(d<15000?" hot":"");}
+    if(T.waiting){pvRefs.cd.textContent="—";pvRefs.cd.className="v";document.getElementById("pv-cdk").textContent="Wartet auf dich";}
+    else if(T.phase==="live"){pvRefs.cd.textContent="LIVE";pvRefs.cd.className="v hot";document.getElementById("pv-cdk").textContent="Jetzt!";}
+    else if(T.phase==="result"){pvRefs.cd.textContent="🏆";pvRefs.cd.className="v";document.getElementById("pv-cdk").textContent="Fertig";}
+    else{pvRefs.cd.textContent=mmss(d);pvRefs.cd.className="v"+(d<15000?" hot":"");document.getElementById("pv-cdk").textContent="GO in";}
   }
-  const bKey=T.phase;
+  const bKey=T.phase+"|"+T.waiting;
   if(pvRefs.lastBtn!==bKey){
     pvRefs.lastBtn=bKey;
     pvRefs.buzzer.className="buzzer standalone joined";
     if(T.phase==="result"){ pvRefs.buzzer.className="buzzer standalone locked"; pvRefs.b1.textContent="🏆"; pvRefs.b2.textContent=resolveRound(PRIV,T.c).winner; }
-    else{ pvRefs.b1.textContent="DRIN ✓"; pvRefs.b2.textContent="GO UM "+clock(T.tGoBase); }
+    else if(T.waiting){ pvRefs.b1.textContent="👥"; pvRefs.b2.textContent="DU GIBST DAS GO"; }
+    else{ pvRefs.b1.textContent="DRIN ✓"; pvRefs.b2.textContent="GLEICH GEHT'S LOS"; }
   }
 }
 
@@ -1534,10 +1584,20 @@ function lbHtml(rows,type){
 }
 
 /* ---------- Profil ---------- */
+function renderBoards(){
+  const LB=lbLists();
+  views.boards.innerHTML=
+    '<div class="backrow"><button class="backbtn" id="lb-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="vtitle" style="color:var(--gold)">🏆 Bestenlisten</div></div>'+
+    '<div class="eyebrow" style="margin-top:14px">⚡ Schnellste heute</div>'+
+    '<div class="lb">'+lbHtml(LB.fast,"fast")+"</div>"+
+    '<div class="eyebrow">🏆 Top-Gewinner heute</div>'+
+    '<div class="lb">'+lbHtml(LB.rich,"rich")+"</div>"+
+    '<div class="p-foot">Zählt für heute · setzt sich um Mitternacht zurück</div>';
+  $("#lb-back").addEventListener("click",()=>navigate("menu"));
+}
 function renderProfile(){
   const st=S.stats;
   const wr=st.plays?Math.round(st.wins/st.plays*100):0;
-  const LB=lbLists();
   views.profile.innerHTML=
     '<div class="backrow"><button class="backbtn" id="p-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button><div class="vtitle">Profil</div></div>'+
     '<div class="p-name">'+esc(S.profile.name)+'</div><div class="p-bal">'+fmtEUR(S.balance)+"</div>"+
@@ -1547,10 +1607,6 @@ function renderProfile(){
       '<div class="dstat"><div class="v">'+(st.best?fmtMs(st.best):"–")+'</div><div class="k">Beste Reaktion</div></div>'+
       '<div class="dstat"><div class="v" style="color:'+(st.net>=0?"var(--gold)":"var(--red)")+'">'+(st.net>=0?"+":"")+fmtEUR(st.net)+'</div><div class="k">Bilanz</div></div>'+
     "</div>"+
-    '<div class="eyebrow" style="margin-top:26px">⚡ Schnellste heute</div>'+
-    '<div class="lb">'+lbHtml(LB.fast,"fast")+"</div>"+
-    '<div class="eyebrow">🏆 Top-Gewinner heute</div>'+
-    '<div class="lb">'+lbHtml(LB.rich,"rich")+"</div>"+
     '<div class="p-rows">'+
       '<div class="p-row"><span>Benachrichtigungen<span class="sub">Erinnert dich, wenn deine Buzzer starten (App im Hintergrund offen)</span></span><button class="switch'+(S.settings.notif?" on":"")+'" id="p-notif"></button></div>'+
       '<div class="p-row"><span>Demo-Tempo<span class="sub">Runde alle 4 min statt 30 min</span></span><button class="switch'+(S.settings.tempo==="demo"?" on":"")+'" id="p-tempo"></button></div>'+
