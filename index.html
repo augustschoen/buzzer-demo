@@ -118,9 +118,9 @@ input{font:inherit;color:inherit}
 
 /* ---------- deine einsätze ---------- */
 #mybets-wrap{margin-bottom:22px}
-#mybets{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+#mybets{display:flex;flex-direction:column;gap:8px}
 #mybets::-webkit-scrollbar{display:none}
-.mybet{flex:none;border:1px solid rgba(79,169,124,.55);padding:9px 13px;cursor:pointer;display:flex;align-items:baseline;gap:9px}
+.mybet{border:1px solid rgba(79,169,124,.55);padding:11px 14px;cursor:pointer;display:flex;align-items:baseline;gap:9px;justify-content:space-between}
 .mybet .s{font-weight:900;font-size:15px}
 .mybet .p{font-weight:900;font-size:12.5px;color:var(--gold);font-variant-numeric:tabular-nums}
 .mybet .c{font-size:11.5px;color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -155,7 +155,8 @@ input{font:inherit;color:inherit}
 .fe b{font-weight:800}
 .fe .txt{color:var(--muted)}
 .fe .amt{font-weight:900;font-variant-numeric:tabular-nums;color:var(--gold);white-space:nowrap}
-.fe .amt.big{font-size:16.5px;color:var(--green)}
+.fe .amt.in{color:var(--green)}
+.fe .amt.big{font-size:16.5px;color:var(--gold)}
 .fe.winrow{font-size:14.5px}
 .fe.sys{color:var(--muted2);font-size:12px;justify-content:center}
 .fe.sys .fe-time{display:none}
@@ -474,7 +475,7 @@ const N=STAKES.length;
 const TARGET={1:120,3:95,5:85,10:65,20:48,50:32,75:26,100:21,200:14,300:12,400:11,500:9,600:8,700:7,800:7,900:6,1000:5,10000:3,20000:2};
 const RAKE=0;               // Demo: keine Gebühr ausgewiesen — Monetarisierung wird separat entschieden
 const CALIB=75, MINMS=92;   // Geräte-Latenz-Kalibrierung (ms)
-const PERIODS={demo:240000, real:1800000};
+const PERIODS={demo:1200000, real:1800000};
 const NAMES=["NovaStrike","Mike_87","luna.exe","QuickFingerz","BlitzKid","jonas_hh","Vexx","MsMillisekunde","turbo_tim","GhostTap","Kira","FlashF1n","NeoJ","SpeedyGnz","0xRapid","HannaBanana","ClickCzar","piXelPete","MiaMoneyy","TapGod","Chr1s","ZoeZoom","Rudi_R","VelvetViper","OTTO","fastlane_","JuliaW","BigPotBob","tiny_tina","Maximus","ping_9ms","AnnikaZ","Der_Daumen","Ricochet","MoneyMika","SnapZ","Elif_x","Timo_x","LagLordLee","frieda.f","BeepBoop","Cassia","Nordlicht","TTV_Blur","paul_pkr","Skrrt","Wrz","Dash_Dee"];
 const JP=101,PRIV=102;              // Spezial-Buzzer: Jackpot, Privat
 const JP_STAKE=10;
@@ -644,8 +645,8 @@ function times(i,t){
   if(i===PRIV)return timesPriv(t);
   const P=period(),off=offsetOf(i);
   const c=Math.floor((t-off)/P),start=c*P+off,end=start+P;
-  const tClose=end-15000,tCount=end-12000,tGoBase=end-9000;
-  const tGo=tGoBase+800+rng(seedOf(i,c,11))()*1800;
+  const tClose=end-24000,tCount=end-21000,tGoBase=end-18000;
+  const tGo=tGoBase+2000+rng(seedOf(i,c,11))()*3000; // grün kommt zufällig 2–5 s nach dem Countdown
   let phase="open";
   if(t>=tGo+3000)phase="result";
   else if(t>=tGo)phase="live";
@@ -738,7 +739,7 @@ function msgNode(m,ctx){ // ctx: "feed" | "chat"
   const time='<span class="fe-time">'+clock(m.t)+"</span>";
   if(m.type==="join"){
     const extra=m.extra>0?' <span class="txt">und '+m.extra+" weitere</span>":"";
-    html=time+"<span><b>"+esc(m.name)+'</b> <span class="txt">ist drin</span>'+extra+' <span class="amt">+'+fmtEUR(m.amt)+"</span></span>";
+    html=time+"<span><b>"+esc(m.name)+'</b> <span class="txt">ist drin</span>'+extra+' <span class="amt in">+'+fmtEUR(m.amt)+"</span></span>";
   }else if(m.type==="win"){
     cls+=" winrow";
     const pot=(ctx==="feed"&&m.i!=null)?' <span class="txt">· '+labelOf(m.i)+"</span>":"";
@@ -1861,7 +1862,7 @@ function renderProfile(){
     "</div>"+
     '<div class="p-rows">'+
       '<div class="p-row"><span>Benachrichtigungen<span class="sub">Erinnert dich, wenn deine Buzzer starten (App im Hintergrund offen)</span></span><button class="switch'+(S.settings.notif?" on":"")+'" id="p-notif"></button></div>'+
-      '<div class="p-row"><span>Demo-Tempo<span class="sub">Runde alle 4 min statt 30 min</span></span><button class="switch'+(S.settings.tempo==="demo"?" on":"")+'" id="p-tempo"></button></div>'+
+      '<div class="p-row"><span>Schnelleres Tempo<span class="sub">Runde alle 20 min statt 30 min</span></span><button class="switch'+(S.settings.tempo==="demo"?" on":"")+'" id="p-tempo"></button></div>'+
       '<div class="p-row"><span>Sound</span><button class="switch'+(S.settings.sound?" on":"")+'" id="p-sound"></button></div>'+
       '<div class="p-row"><button class="danger" style="font-weight:700" id="p-reset">Demo zurücksetzen</button></div>'+
     "</div>"+
@@ -1880,7 +1881,7 @@ function renderProfile(){
     S.bets={}; S.private=null;
     S.settings.tempo=S.settings.tempo==="demo"?"real":"demo";
     save(); syncMoney(); renderProfile();
-    toast(S.settings.tempo==="demo"?"Demo-Tempo: Runden alle 4 min":"Echtzeit: Runden alle 30 min");
+    toast(S.settings.tempo==="demo"?"Runden alle 20 min":"Runden alle 30 min");
   });
   $("#p-sound").addEventListener("click",e=>{ S.settings.sound=!S.settings.sound; save(); e.currentTarget.classList.toggle("on",S.settings.sound); });
   $("#p-reset").addEventListener("click",()=>{ localStorage.removeItem(LS); location.reload(); });

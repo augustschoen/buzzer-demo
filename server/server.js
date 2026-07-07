@@ -33,7 +33,7 @@ const RND_STAKES=[1,5,10,20,50,100];
 const RND_TARGET={1:60,5:45,10:34,20:24,50:14,100:9};
 const isRnd=i=>i>=RND_BASE&&i<RND_BASE+RND_STAKES.length;
 const RND_PERIOD=180000;
-const PERIOD=240000; // Online läuft im Demo-Tempo (4 min)
+const PERIOD=1200000; // Rundenlänge klassisch: 20 min
 const RAKE=0;
 const MINMS=92;
 const NAMES=["NovaStrike","Mike_87","luna.exe","QuickFingerz","BlitzKid","jonas_hh","Vexx","MsMillisekunde","turbo_tim","GhostTap","Kira","FlashF1n","NeoJ","SpeedyGnz","0xRapid","HannaBanana","ClickCzar","piXelPete","MiaMoneyy","TapGod","Chr1s","ZoeZoom","Rudi_R","VelvetViper","OTTO","fastlane_","JuliaW","BigPotBob","tiny_tina","Maximus","ping_9ms","AnnikaZ","Der_Daumen","Ricochet","MoneyMika","SnapZ","Elif_x","Timo_x","LagLordLee","frieda.f","BeepBoop","Cassia","Nordlicht","TTV_Blur","paul_pkr","Skrrt","Wrz","Dash_Dee"];
@@ -75,8 +75,8 @@ function times(i,t){
   }
   const P=PERIOD,off=offsetOf(i);
   const c=Math.floor((t-off)/P),start=c*P+off,end=start+P;
-  const tClose=end-15000,tCount=end-12000,tGoBase=end-9000;
-  const tGo=tGoBase+800+rng(seedOf(i,c,11))()*1800;
+  const tClose=end-24000,tCount=end-21000,tGoBase=end-18000;
+  const tGo=tGoBase+2000+rng(seedOf(i,c,11))()*3000; // grün 2–5 s nach Countdown
   return {i,c,start,end,tClose,tCount,tGoBase,tGo,phase:phaseOf(t,tClose,tCount,tGoBase,tGo),key:i+":"+c};
 }
 function targetOf(i,c){
