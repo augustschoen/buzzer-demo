@@ -248,7 +248,11 @@ input{font:inherit;color:inherit}
 .methods{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .methods button{padding:14px 0;border:1px solid var(--line);font-weight:800;font-size:14.5px;background:var(--bg);display:flex;align-items:center;justify-content:center;gap:8px}
 .methods button:active{border-color:var(--violet-dim)}
-.methods .apay{background:#fff;color:#000;border-color:#fff}
+.methods .apay{background:#fff;color:#000;border-color:#fff;font-weight:600;font-size:17px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.methods .ppal{background:#FFC439;border-color:#FFC439;gap:0;font-style:italic;font-weight:800;font-size:16px;letter-spacing:-.2px}
+.methods .ppal .p1{color:#003087}
+.methods .ppal .p2{color:#0070E0}
+.methods .vnmo{background:#008CFF;border-color:#008CFF;color:#fff;font-weight:800;font-size:16.5px;letter-spacing:.2px}
 
 /* ---------- round overlay ---------- */
 #ov{position:fixed;inset:0;z-index:90;display:none;flex-direction:column;align-items:center;justify-content:center;background:#000;touch-action:manipulation}
@@ -441,9 +445,9 @@ input{font:inherit;color:inherit}
   <div class="amounts" id="tu-amounts"></div>
   <div class="methods">
     <button class="apay" data-m="Apple Pay"> Pay</button>
-    <button data-m="PayPal">PayPal</button>
-    <button data-m="Venmo">Venmo</button>
-    <button data-m="Karte">💳 Karte</button>
+    <button class="ppal" data-m="PayPal"><span class="p1">Pay</span><span class="p2">Pal</span></button>
+    <button class="vnmo" data-m="Venmo">venmo</button>
+    <button data-m="Karte"><svg width="27" height="17" viewBox="0 0 27 17" aria-hidden="true"><circle cx="10" cy="8.5" r="7.5" fill="#EB001B"/><circle cx="17" cy="8.5" r="7.5" fill="#F79E1B" fill-opacity=".92"/></svg> Karte</button>
   </div>
 </div>
 
@@ -1303,7 +1307,7 @@ function renderPriv(){
     views.priv.innerHTML=
       '<div class="backrow"><button class="backbtn" id="pv-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+
       '<div class="vtitle">👥 Privater Buzzer</div></div>'+
-      '<div class="explain">Euer eigener Buzzer — nur du und deine Freunde, euer Pot. Einsatz wählen, Link teilen, warten bis alle drin sind. <b style="color:var(--text)">Du gibst das GO</b> — der Buzzer feuert dann ~30 Sekunden später.</div>'+
+      '<div class="explain">Euer eigener Buzzer — nur du und deine Freunde, euer Pot. Einsatz wählen, Link teilen, warten bis alle drin sind. <b style="color:var(--text)">Du gibst das GO</b> — der Buzzer feuert dann ~30 Sekunden später. <b style="color:var(--gold)">Ohne Gebühr:</b> Der komplette Pot geht an den Schnellsten.</div>'+
       '<div class="eyebrow">Einsatz pro Person</div><div class="choice" id="pv-stakes"></div>'+
       '<button class="wide-btn" id="pv-create">Buzzer erstellen — '+fmtEUR(pvStake)+" Einsatz</button>"+
       '<div class="pv-note">Demo: Deine Freunde werden simuliert. Echte Einladungslinks kommen mit dem Server-Teil.</div>';
