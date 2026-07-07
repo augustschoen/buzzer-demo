@@ -1,0 +1,11 @@
+# Laufzeit-Daten: enthält Konten & Guthaben — gehört NICHT ins öffentliche Repo
+server/data.json
+
+# Abhängigkeiten
+server/node_modules/
+
+# Generiert (Artifact-Variante von index.html, wird bei Bedarf neu erzeugt)
+buzzer-app.html
+
+# Lokale Editor-/Tool-Einstellungen
+.claude/
