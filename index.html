@@ -41,6 +41,9 @@ input{font:inherit;color:inherit}
 .logo{font-size:22px;font-weight:900;font-style:italic;letter-spacing:-.5px;display:flex;align-items:baseline;gap:8px}
 .logo .zz{color:var(--violet)}
 .demo-chip{font-style:normal;font-weight:700;font-size:9px;letter-spacing:2px;color:var(--muted2)}
+#net-dot{width:8px;height:8px;border-radius:50%;background:var(--muted2);display:inline-block;vertical-align:middle;transition:background .3s}
+#net-dot.on{background:var(--green);box-shadow:0 0 7px var(--green)}
+#net-dot.off{background:var(--red)}
 #topbar .right{display:flex;align-items:center;gap:16px}
 #balance-pill{display:flex;align-items:baseline;gap:6px;color:var(--gold);font-weight:800;font-size:16px;font-variant-numeric:tabular-nums}
 #balance-pill .plus{font-size:14px;font-weight:900;color:var(--muted)}
@@ -338,7 +341,7 @@ input{font:inherit;color:inherit}
 
 <div id="app">
   <header id="topbar">
-    <div class="logo">BU<span class="zz">ZZ</span>ER <em class="demo-chip">DEMO</em></div>
+    <div class="logo">BU<span class="zz">ZZ</span>ER <em id="net-dot" title="Offline — Simulation"></em></div>
     <div class="right">
       <button id="balance-pill" aria-label="Guthaben aufladen"><span id="bal-txt">0 €</span><span class="plus">+</span></button>
       <button id="btn-boards" aria-label="Bestenlisten">
@@ -411,7 +414,7 @@ input{font:inherit;color:inherit}
 
   <div class="o-step" id="onb-step1">
     <h2>Konto erstellen</h2>
-    <div class="o-sub">Username und E-Mail — mehr brauchen wir erstmal nicht.</div>
+    <div class="o-sub">Username und E-Mail.</div>
     <input type="text" id="onb-name" maxlength="16" placeholder="Username" autocomplete="off">
     <input type="email" id="onb-email" placeholder="E-Mail-Adresse" autocomplete="off" inputmode="email">
     <label class="o-check"><input type="checkbox" id="onb-terms"><span>Ich akzeptiere die Nutzungsbedingungen und Datenschutzerklärung.</span></label>
@@ -420,7 +423,7 @@ input{font:inherit;color:inherit}
 
   <div class="o-step" id="onb-step2">
     <h2>E-Mail bestätigen</h2>
-    <div class="o-sub">Wir haben einen 6-stelligen Code an <b id="onb-mail-echo"></b> geschickt.</div>
+    <div class="o-sub">Code an <b id="onb-mail-echo"></b> geschickt.</div>
     <input type="text" id="onb-code" maxlength="6" placeholder="Code eingeben" inputmode="numeric" autocomplete="one-time-code" style="text-align:center;letter-spacing:6px;font-weight:900">
     <button class="o-cta" id="onb-verify" disabled>Bestätigen</button>
     <div class="o-err" id="onb-err"></div>
@@ -429,7 +432,7 @@ input{font:inherit;color:inherit}
 
   <div class="o-step" id="onb-step3">
     <h2>Altersverifikation</h2>
-    <div class="o-sub">Um echtes Geld zu setzen, musst du <b>mindestens 18</b> sein — das prüfen wir einmalig per Ausweis-Check.</div>
+    <div class="o-sub">Einmaliger Ausweis-Check — ab 18.</div>
     <button class="o-cta" id="onb-idcheck" style="margin-bottom:10px">Ausweis-Check starten</button>
     <button class="o-cta" id="onb-go" disabled>Los geht's — 500 € Demo-Guthaben</button>
   </div>
@@ -492,6 +495,82 @@ function save(){ try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){} }
 
 let timeOffset=0;
 const now=()=>Date.now()+timeOffset;
+
+/* ---------- Netzwerk (Phase-1 Backend) ---------- */
+/* Mit Server: Guthaben + private Lobbys sind echt & geteilt.
+   Ohne Server (z. B. GitHub Pages): App läuft als Offline-Simulation weiter. */
+const SRV_OVERRIDE=new URLSearchParams(location.search).get("srv");
+function wsUrl(){
+  if(SRV_OVERRIDE)return (SRV_OVERRIDE.indexOf("ws")===0?SRV_OVERRIDE:(location.protocol==="https:"?"wss://":"ws://")+SRV_OVERRIDE)+"/ws";
+  if(location.protocol==="file:")return null; // lokal geöffnet → offline
+  return (location.protocol==="https:"?"wss://":"ws://")+location.host+"/ws";
+}
+const NET={ws:null,on:false,tries:0,lobby:null,everConnected:false};
+function netStoreToken(tok){ try{localStorage.setItem("bz_token",tok);}catch(e){} }
+function netToken(){ try{return localStorage.getItem("bz_token")||null;}catch(e){return null;} }
+function netSend(o){ try{ if(NET.ws&&NET.ws.readyState===1){NET.ws.send(JSON.stringify(o));return true;} }catch(e){} return false; }
+function netConnect(){
+  const url=wsUrl(); if(!url)return;
+  let ws; try{ ws=new WebSocket(url); }catch(e){ return; }
+  NET.ws=ws;
+  ws.onopen=()=>{ NET.tries=0; netSend({t:"hello",token:netToken(),name:S.profile?S.profile.name:null}); };
+  ws.onmessage=e=>{ let m; try{m=JSON.parse(e.data);}catch(_){ return; } try{ netHandle(m); }catch(err){} };
+  ws.onclose=()=>{ NET.on=false; updateNetPill(); NET.tries++; setTimeout(netConnect,Math.min(8000,800*NET.tries+400)); };
+  ws.onerror=()=>{ try{ws.close();}catch(_){} };
+}
+function updateNetPill(){
+  const el=$("#net-dot"); if(!el)return;
+  el.className=NET.on?"on":(NET.everConnected?"off":"");
+  el.title=NET.on?"Online — mit Server verbunden":"Offline — Simulation";
+}
+function netHandle(m){
+  switch(m.t){
+    case "welcome":
+      NET.on=true; NET.everConnected=true; netStoreToken(m.token);
+      timeOffset=m.serverNow-Date.now();            // Uhr mit Server synchronisieren
+      if(S.profile)S.balance=m.balance;             // nur für onboardete Nutzer Guthaben übernehmen
+      save(); syncMoney(); updateNetPill();
+      handleDeepLink();
+      break;
+    case "balance":
+      S.balance=m.balance; save(); syncMoney();
+      if(m.topup)toast("✓ "+fmtEUR(m.topup)+" aufgeladen");
+      break;
+    case "betok":
+      S.balance=m.balance; save(); syncMoney();
+      if(!S.bets[m.key])S.bets[m.key]={stake:stakeOf(m.i),t:now(),done:false};
+      break;
+    case "betfail":
+      if(S.bets[m.key])delete S.bets[m.key];
+      syncMoney();
+      toast(m.reason==="balance"?"Nicht genug Guthaben — lad kurz auf":"Einsätze sind zu");
+      if(m.reason==="balance")openTopup();
+      break;
+    case "join":
+      if(m.name!==(S.profile&&S.profile.name))pushBoth(m.i,{type:"join",name:m.name,amt:m.amt,extra:0});
+      break;
+    case "chat":
+      if(m.name!==(S.profile&&S.profile.name))pushChat(m.i,{type:"user",name:m.name,text:m.text});
+      break;
+    case "result":
+      netPublicResult(m); break;
+    case "priv": netPriv(m); break;
+    case "privgo": pvGo(); break;
+    case "privresult": pvResult(m); break;
+    case "privend":
+      NET.lobby=null; S.private=null;
+      if(m.balance!=null){S.balance=m.balance;syncMoney();}
+      toast(m.msg||"Lobby beendet"); if(currentView==="priv")renderPriv();
+      break;
+    case "privchat":
+      if(m.join)pushChat(PRIV,{type:"join",name:m.name,amt:m.amt,extra:0});
+      else if(m.name!==(S.profile&&S.profile.name))pushChat(PRIV,{type:"user",name:m.name,text:m.text});
+      break;
+    case "privfail":
+      toast(m.reason==="notfound"?"Lobby nicht gefunden":m.reason==="started"?"Runde läuft schon":m.reason==="balance"?"Nicht genug Guthaben":m.reason==="full"?"Lobby ist voll":"Geht gerade nicht");
+      break;
+  }
+}
 
 /* ---------- Utils ---------- */
 const $=s=>document.querySelector(s);
@@ -622,7 +701,9 @@ function settleUser(i,c,userMs){ // userMs: number | null (verpasst) | "dq"
     if(S.stats.best===null||userMs<S.stats.best)S.stats.best=userMs;
   }
   S.stats.plays++;
-  if(prize>0){ S.balance+=prize; S.stats.net+=prize; if(rank===1)S.stats.wins++; }
+  // Bei Server-Verbindung ist der Server die Kasse — Guthaben kommt per 'result'/'balance'.
+  if(prize>0&&!NET.on){ S.balance+=prize; }
+  if(prize>0){ S.stats.net+=prize; if(rank===1)S.stats.wins++; }
   ensureDay();
   S.day.bets++;
   if(typeof userMs==="number"&&(S.day.best==null||userMs<S.day.best))S.day.best=userMs;
@@ -731,6 +812,8 @@ function tick(){
   }
   if(Object.keys(joinCache).length>400){ for(const k of Object.keys(joinCache).slice(0,200))delete joinCache[k]; }
   checkTakeover(t);
+  // Online-Privat: Bereitschafts-Overlay kurz vor GO für alle öffnen (GO selbst kommt vom Server)
+  if(NET.on&&NET.lobby&&NET.lobby.startAt&&!PV.active&&!PV.done){ const d=NET.lobby.startAt-t; if(d<=12000&&d>-2000)pvArmSuspense(); }
   checkNotify(t);
   const hypeIdx=currentView==="detail"?currentDetail:currentView==="random"?rdPool:currentView==="jack"?JP:currentView==="priv"&&S.private?PRIV:null;
   if(hypeIdx!=null&&Math.random()<0.028)
@@ -832,8 +915,8 @@ function renderOverlayShell(i,T){
   ovEl.classList.remove("go-bg");
   const title=isRnd(i)?"Random-Buzzer · "+fmtEUR(stakeOf(i)):i===JP?"🏆 JACKPOT · "+fmtEUR(JP_STAKE):i===PRIV?"Privater Buzzer · "+fmtEUR(stakeOf(PRIV)):fmtEUR(STAKES[i])+"-Buzzer";
   const hint=isRnd(i)
-    ?'GO kann <b style="color:#fff">JEDEN MOMENT</b> kommen — tipp erst, wenn der Bildschirm grün wird.<br>Jeder Tap davor = Fehlstart, Einsatz weg.'
-    :'Warte auf <b style="color:#fff">GO!</b> — dann tipp irgendwo auf den Bildschirm.<br>Zu früh getippt = Fehlstart, Einsatz weg.';
+    ?'Tipp erst, wenn es <b style="color:#fff">grün</b> wird. Zu früh = Fehlstart.'
+    :'Warte auf <b style="color:#fff">GO!</b> Zu früh = Fehlstart.';
   ovEl.innerHTML=
     '<div class="ov-eyebrow">'+title+" · Runde läuft</div>"+
     '<div class="ov-pot" id="ov-pot">'+fmtEUR(potOf(i,T,t))+"</div>"+
@@ -876,11 +959,10 @@ function showResultPanel(o){
   let inner="";
   if(o.kind==="dq"){
     inner='<div class="r-title red">Fehlstart! ⚡</div><div class="r-ms" style="font-size:22px">Zu früh getippt</div>'+
-      '<div class="r-sub">Vor dem GO ist tabu — dein Einsatz von <b>'+fmtEUR(res?res.stake:0)+"</b> bleibt im Pot.</div>"+
       '<div class="r-loss">−'+fmtEUR(res?res.stake:0)+"</div>";
   }else if(o.kind==="miss"){
     inner='<div class="r-title red">Verpasst 😴</div>'+
-      '<div class="r-sub" style="margin-top:8px">Du hast nicht innerhalb von 3 Sekunden getippt.<br>Einsatz verloren.</div>'+
+      '<div class="r-sub" style="margin-top:8px">Nicht rechtzeitig getippt.</div>'+
       '<div class="r-loss">−'+fmtEUR(res?res.stake:0)+"</div>";
   }else if(res){
     const won=res.prize>0, first=res.rank===1;
@@ -920,6 +1002,7 @@ ovEl.addEventListener("pointerdown",e=>{
     engaged.userMs=ms;
     engaged.state="sync";
     if(navigator.vibrate)navigator.vibrate(15);
+    if(NET.on)netSend({t:"tap",key:engaged.key,ms}); // Zeit an den Server melden
     ovEl.classList.remove("go-bg");
     ovEl.innerHTML='<div class="ov-eyebrow">Deine Zeit</div><div class="ov-pot" style="color:var(--violet)">'+fmtMs(ms)+"</div>"+
       '<div class="ov-players">wird zentral mit allen Spielern abgeglichen …</div><div class="spin"></div>';
@@ -1169,7 +1252,10 @@ function updateMenu(t){
   $("#tr-sub").innerHTML=rndOpen>0
     ?"1–100 € · GO kommt zufällig · Pots <b>"+fmtEUR(rndSum)+"</b>"
     :'1–100 € · <span class="hot">zur Zeit nicht verfügbar</span>';
-  if(S.private){
+  if(NET.on&&NET.lobby){
+    const L=NET.lobby;
+    $("#tp-sub").innerHTML='<span class="ok">Lobby '+L.code+"</span> · "+L.members.length+" dabei · Pot <b>"+fmtEUR(L.members.length*L.stake)+"</b>";
+  }else if(!NET.on&&S.private){
     const TP=timesPriv(t);
     if(TP){
       if(TP.waiting)$("#tp-sub").innerHTML='<span class="ok">Lobby offen</span> · du gibst das GO · Pot <b>'+fmtEUR(potOf(PRIV,TP,t))+"</b>";
@@ -1210,7 +1296,7 @@ function renderRandom(){
   views.random.innerHTML=
     '<div class="backrow"><button class="backbtn" id="rd-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+
     '<div class="vtitle">🎲 Random</div><div id="d-mode">Winner takes all</div></div>'+
-    '<div class="explain">Wähl deinen Einsatz — der Buzzer geht <b style="color:var(--text)">irgendwann in den nächsten Minuten</b> los. Niemand kennt den Moment. Sobald du drin bist: Jeder Tap vor dem GO ist ein Fehlstart.</div>'+
+    '<div class="explain">Einsatz wählen — das <b style="color:var(--text)">GO kommt zufällig</b>, niemand kennt den Moment.</div>'+
     '<div class="eyebrow">Einsatz</div><div class="choice" id="rd-stakes" style="grid-template-columns:repeat(6,1fr)"></div>'+
     '<div id="d-stage"><button class="buzzer standalone" id="rd-buzzer"><span class="b1"></span><span class="b2"></span></button>'+
     '<div id="d-stats">'+
@@ -1261,7 +1347,7 @@ function renderJack(){
   views.jack.innerHTML=
     '<div class="backrow"><button class="backbtn" id="jk-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+
     '<div class="vtitle" style="color:var(--gold)">🏆 Jackpot</div><div id="d-mode">1× täglich · WTA</div></div>'+
-    '<div class="explain">Jeden Tag um <b style="color:var(--text)">20:15</b> geht der Jackpot-Buzzer los. Einsatz '+fmtEUR(JP_STAKE)+', der Pot wächst den ganzen Tag. Einsätze schließen 15 Sekunden vor dem Start.</div>'+
+    '<div class="explain">Täglich um <b style="color:var(--text)">20:15</b>. Der Pot wächst den ganzen Tag.</div>'+
     '<div id="d-stage"><button class="buzzer standalone goldb" id="jk-buzzer"><span class="b1"></span><span class="b2"></span></button>'+
     '<div id="d-stats">'+
       '<div class="dstat"><div class="v gold" id="jk-pot">–</div><div class="k">Pot</div></div>'+
@@ -1299,18 +1385,150 @@ function updateJack(t){
   }
 }
 
-/* ---------- Privater Buzzer ---------- */
+/* ---------- Öffentliches Server-Ergebnis (Guthaben = Server) ---------- */
+function netPublicResult(m){
+  if(m.balance!=null){ S.balance=m.balance; save(); syncMoney(); }
+}
+
+/* ---------- Privater Buzzer: ONLINE (echt, über Server) ---------- */
+const PV={active:false,tapped:false,goPerf:0,false:false};
+function inviteLink(code){
+  const base=location.origin+location.pathname+(SRV_OVERRIDE?("?srv="+encodeURIComponent(SRV_OVERRIDE)):"");
+  return base+(base.indexOf("?")>=0?"&":"?")+"join="+code;
+}
+function netPriv(m){ NET.lobby=m; if(currentView==="priv")renderPriv(); }
+function renderPrivLive(){
+  const L=NET.lobby;
+  if(!L){
+    views.priv.innerHTML=
+      '<div class="backrow"><button class="backbtn" id="pv-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+
+      '<div class="vtitle">👥 Privater Buzzer</div></div>'+
+      '<div class="explain">Eigener Buzzer für dich und deine Freunde. <b style="color:var(--text)">Du gibst das GO.</b></div>'+
+      '<div class="eyebrow">Einsatz pro Person</div><div class="choice" id="pv-stakes"></div>'+
+      '<button class="wide-btn" id="pv-create">Buzzer erstellen — '+fmtEUR(pvStake)+" Einsatz</button>";
+    $("#pv-back").addEventListener("click",()=>navigate("menu"));
+    const sBox=$("#pv-stakes");
+    [1,5,10,20,50,100].forEach(v=>{ const b=document.createElement("button"); b.textContent=fmtEUR(v); if(v===pvStake)b.classList.add("sel");
+      b.addEventListener("click",()=>{pvStake=v;sBox.querySelectorAll("button").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");$("#pv-create").textContent="Buzzer erstellen — "+fmtEUR(v)+" Einsatz";}); sBox.appendChild(b); });
+    $("#pv-create").addEventListener("click",()=>{ if(S.balance<pvStake){toast("Nicht genug Guthaben — lad kurz auf");openTopup();return;} chats[PRIV]=[]; netSend({t:"privcreate",stake:pvStake}); });
+    return;
+  }
+  const iAmCreator=L.creator===(S.profile&&S.profile.name);
+  const waiting=!L.startAt;
+  const pot=L.members.length*L.stake;
+  views.priv.innerHTML=
+    '<div class="backrow"><button class="backbtn" id="pv-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+
+    '<div class="vtitle">👥 Privat · '+L.code+'</div><div id="d-mode">'+fmtEUR(L.stake)+"</div></div>"+
+    '<div id="d-stage"><button class="buzzer standalone joined" id="pv-buzzer"><span class="b1">DRIN ✓</span><span class="b2">'+(waiting?"WARTET":"GLEICH GEHT'S LOS")+'</span></button>'+
+    '<div id="d-stats">'+
+      '<div class="dstat"><div class="v gold">'+fmtEUR(pot)+'</div><div class="k">Pot</div></div>'+
+      '<div class="dstat"><div class="v">'+L.members.length+'</div><div class="k">Dabei</div></div>'+
+      '<div class="dstat"><div class="v" id="pv-cd">'+(waiting?"—":mmss(L.startAt-now()))+'</div><div class="k">'+(waiting?"Bereit":"GO in")+'</div></div>'+
+    "</div></div>"+
+    '<div class="mybets" style="margin:2px 0 14px;flex-wrap:wrap">'+L.members.map(n=>'<span class="mybet" style="border-color:var(--line)">'+esc(n)+(n===L.creator?" 👑":"")+"</span>").join("")+"</div>"+
+    (waiting
+      ? (iAmCreator
+          ? '<button class="wide-btn" id="pv-start" style="background:var(--green);color:#04140C">▶ START — alle bereit?</button><button class="wide-btn ghost" id="pv-share">📤 Einladungslink teilen</button><button class="wide-btn ghost" id="pv-cancel">Abbrechen — Einsatz zurück</button>'
+          : '<button class="wide-btn ghost" id="pv-share">📤 Einladungslink teilen</button><div class="explain" style="margin-top:12px">Warte auf das GO von <b style="color:var(--text)">'+esc(L.creator)+'</b>.</div>')
+      : '')+
+    chatBlock("pv","Gruppen-Chat");
+  $("#pv-back").addEventListener("click",()=>navigate("menu"));
+  if($("#pv-start"))$("#pv-start").addEventListener("click",()=>netSend({t:"privstart"}));
+  if($("#pv-cancel"))$("#pv-cancel").addEventListener("click",()=>netSend({t:"privcancel"}));
+  if($("#pv-share"))$("#pv-share").addEventListener("click",()=>{
+    const link=inviteLink(L.code);
+    const txt="Komm in meinen BUZZER! "+fmtEUR(L.stake)+" Einsatz, Schnellster holt alles: "+link;
+    if(navigator.share)navigator.share({text:txt}).catch(()=>{});
+    else if(navigator.clipboard){ navigator.clipboard.writeText(link); toast("Einladungslink kopiert — ab in die Gruppe 📤"); }
+    else toast("Link: "+link);
+  });
+  wireChatNet("pv",PRIV);
+}
+function updatePrivLive(t){
+  const L=NET.lobby; if(!L||!L.startAt)return;
+  const cd=$("#pv-cd"); if(cd){ const d=L.startAt-t; cd.textContent=d>0?mmss(d):"…"; }
+  // Kurz vor Start Bereitschafts-Overlay öffnen (GO-Signal kommt vom Server)
+  if(!PV.active&&!PV.done&&L.startAt-t<=12000&&L.startAt-t>-1000){ pvArmSuspense(); }
+}
+function pvArmSuspense(){
+  if(PV.active)return;
+  PV.active=true; PV.tapped=false; PV.false=false; PV.done=false;
+  if(currentView!=="priv")navigate("priv");
+  ovEl.classList.remove("go-bg");
+  ovEl.innerHTML='<div class="ov-eyebrow">Privater Buzzer · '+fmtEUR(NET.lobby.stake)+'</div>'+
+    '<div class="ov-pot" style="color:var(--gold)">'+fmtEUR(NET.lobby.members.length*NET.lobby.stake)+'</div>'+
+    '<div class="ov-players">'+NET.lobby.members.length+' Spieler im Pot</div>'+
+    '<div class="ov-center"><div class="ov-big dots">• • •</div><div id="ov-sub" style="font-size:13px;color:var(--muted);font-weight:700">Gleich … nicht zu früh!</div></div>'+
+    '<div class="ov-hint">Warte auf <b style="color:#fff">GO!</b> Zu früh = Fehlstart.</div>';
+  ovEl.classList.add("on");
+}
+function pvGo(){
+  if(PV.false)return;
+  PV.active=true; PV.tapped=false; PV.goPerf=performance.now();
+  if(currentView!=="priv")navigate("priv");
+  ovEl.classList.add("on"); ovEl.classList.add("go-bg");
+  ovEl.innerHTML='<div class="ov-eyebrow">Privat · '+fmtEUR(NET.lobby?NET.lobby.stake:0)+'</div>'+
+    '<div class="ov-center"><div class="go-txt">GO!</div></div>'+
+    '<div class="ov-hint"><b>JETZT TIPPEN!</b></div>';
+  beep(920,.14,"square",.16); beep(1380,.22,"square",.13,.03);
+  if(navigator.vibrate)navigator.vibrate(40);
+}
+function pvResult(m){
+  PV.active=false; PV.done=true;
+  ovEl.classList.remove("go-bg");
+  if(m.balance!=null){ S.balance=m.balance; save(); syncMoney(); }
+  const won=m.you&&m.you.won>0;
+  const rows=(m.ranking||[]).map((r,ix)=>'<div class="pr'+(r.name===(S.profile&&S.profile.name)?" me":"")+'"><span class="rk">'+(ix+1)+'.</span><span class="nm">'+esc(r.name)+'</span><span class="tm">'+(r.ms!=null?fmtMs(r.ms):"—")+'</span></div>').join("");
+  const inner=(won
+      ?'<div class="r-title gold">DU HAST DEN POT! 🏆</div><div class="r-prize">+'+fmtEUR(m.you.won)+'</div>'
+      :'<div class="r-title">'+(m.winner?esc(m.winner.name)+" gewinnt":"Runde beendet")+'</div>'+(m.you&&m.you.ms!=null?'<div class="r-ms">'+fmtMs(m.you.ms)+'</div>':'<div class="r-sub" style="margin-top:8px">Nicht rechtzeitig getippt.</div>'))+
+    '<div class="pod" style="margin-top:14px">'+rows+'</div>'+
+    '<div class="r-meta">Privat · Pot '+fmtEUR(m.pot)+' · '+((m.ranking||[]).length)+' Spieler · ohne Gebühr</div>';
+  ovEl.innerHTML='<div class="res '+(won?"win-r":"")+'">'+inner+'<button class="r-btn" id="ov-close">Weiter</button></div>';
+  ovEl.classList.add("on");
+  $("#ov-close").addEventListener("click",()=>{ ovEl.classList.remove("on","go-bg"); ovEl.innerHTML=""; NET.lobby=null; PV.done=false; if(currentView==="priv")renderPriv(); });
+  if(won){ confetti(); winSound(); }
+}
+function wireChatNet(pfx,idx){
+  const send=()=>{ const inp=$("#"+pfx+"-input"),v=inp.value.trim(); if(!v)return; pushChat(idx,{type:"user",name:S.profile.name,text:v}); netSend({t:"privchat",text:v}); inp.value=""; };
+  $("#"+pfx+"-send").addEventListener("click",send);
+  $("#"+pfx+"-input").addEventListener("keydown",e=>{if(e.key==="Enter")send();});
+  const chat=$("#"+pfx+"-chat");
+  for(const mm of chats[idx].slice(-40))chat.appendChild(msgNode(mm,"chat"));
+  chat.scrollTop=chat.scrollHeight;
+}
+// Online-Private Tap (eigener Overlay-Handler, greift nur wenn PV aktiv)
+ovEl.addEventListener("pointerdown",e=>{
+  if(engaged||!PV.active)return;
+  if(PV.tapped||PV.false)return;
+  if(!ovEl.classList.contains("go-bg")){ // vor GO getippt = Fehlstart
+    e.preventDefault(); PV.false=true; PV.active=false;
+    ovEl.classList.remove("go-bg");
+    ovEl.innerHTML='<div class="res"><div class="r-title red">Fehlstart! ⚡</div><div class="r-ms" style="font-size:22px">Zu früh getippt</div><button class="r-btn" id="ov-close">Weiter</button></div>';
+    $("#ov-close").addEventListener("click",()=>{ ovEl.classList.remove("on"); ovEl.innerHTML=""; });
+    beep(140,.4,"sawtooth",.18); if(navigator.vibrate)navigator.vibrate([60,40,60]);
+    return;
+  }
+  e.preventDefault(); PV.tapped=true;
+  const ms=Math.max(MINMS,performance.now()-PV.goPerf-CALIB);
+  netSend({t:"privtap",code:NET.lobby?NET.lobby.code:null,ms});
+  if(navigator.vibrate)navigator.vibrate(15);
+  ovEl.classList.remove("go-bg");
+  ovEl.innerHTML='<div class="ov-eyebrow">Deine Zeit</div><div class="ov-pot" style="color:var(--violet)">'+fmtMs(ms)+'</div><div class="ov-players">wird mit deinen Freunden abgeglichen …</div><div class="spin"></div>';
+});
+
+/* ---------- Privater Buzzer: OFFLINE-Simulation ---------- */
 const pvRefs={};
 let pvStake=10;
 function renderPriv(){
+  if(NET.on)return renderPrivLive();
   if(!S.private){
     views.priv.innerHTML=
       '<div class="backrow"><button class="backbtn" id="pv-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+
       '<div class="vtitle">👥 Privater Buzzer</div></div>'+
-      '<div class="explain">Euer eigener Buzzer — nur du und deine Freunde, euer Pot. Einsatz wählen, Link teilen, warten bis alle drin sind. <b style="color:var(--text)">Du gibst das GO</b> — der Buzzer feuert dann ~30 Sekunden später. <b style="color:var(--gold)">Ohne Gebühr:</b> Der komplette Pot geht an den Schnellsten.</div>'+
+      '<div class="explain">Eigener Buzzer für dich und deine Freunde. <b style="color:var(--text)">Du gibst das GO.</b></div>'+
       '<div class="eyebrow">Einsatz pro Person</div><div class="choice" id="pv-stakes"></div>'+
-      '<button class="wide-btn" id="pv-create">Buzzer erstellen — '+fmtEUR(pvStake)+" Einsatz</button>"+
-      '<div class="pv-note">Demo: Deine Freunde werden simuliert. Echte Einladungslinks kommen mit dem Server-Teil.</div>';
+      '<button class="wide-btn" id="pv-create">Buzzer erstellen — '+fmtEUR(pvStake)+" Einsatz</button>";
     $("#pv-back").addEventListener("click",()=>navigate("menu"));
     const stakes=[1,5,10,20,50,100];
     const sBox=$("#pv-stakes");
@@ -1383,6 +1601,7 @@ function renderPriv(){
   wireChat("pv",PRIV);
 }
 function updatePriv(t){
+  if(NET.on){ updatePrivLive(t); return; }
   if(currentView!=="priv"||!S.private)return;
   const T=timesPriv(t); if(!T)return;
   if(pvRefs.pot)pvRefs.pot.textContent=fmtEUR(potOf(PRIV,T,t));
@@ -1469,11 +1688,11 @@ function togglePayoutPop(i){
   const t=now(),T=times(i,t),pot=potOf(i,T,t),mode=modeOf(STAKES[i]);
   p.innerHTML = mode==="wta"
     ? '<div class="pp-row"><span>1. Platz</span><span class="amt">'+fmtEUR(pot)+'</span></div>'+
-      '<div class="pp-note">Der Schnellste bekommt den gesamten Pot. Stand jetzt — der Pot wächst bis zum Start.</div>'
+      '<div class="pp-note">Wächst bis zum Start.</div>'
     : '<div class="pp-row"><span>1. Platz · 60 %</span><span class="amt">'+fmtEUR(pot*.6)+'</span></div>'+
       '<div class="pp-row"><span>2. Platz · 25 %</span><span class="amt">'+fmtEUR(pot*.25)+'</span></div>'+
       '<div class="pp-row"><span>3. Platz · 15 %</span><span class="amt">'+fmtEUR(pot*.15)+'</span></div>'+
-      '<div class="pp-note">Stand jetzt — der Pot wächst bis zum Start.</div>';
+      '<div class="pp-note">Wächst bis zum Start.</div>';
   p.classList.add("on");
 }
 document.addEventListener("click",e=>{
@@ -1491,9 +1710,15 @@ function tryBet(i){
     return;
   }
   if(S.balance<s){ toast("Nicht genug Guthaben — lad kurz auf"); openTopup(); return; }
-  S.balance-=s; S.stats.net-=s;
-  S.bets[T.key]={stake:s,t,done:false};
-  save(); syncMoney();
+  if(NET.on){
+    // Server ist die Kasse — Einsatz dort platzieren, Bestätigung kommt per 'betok'
+    S.bets[T.key]={stake:s,t,done:false,pending:true};
+    netSend({t:"bet",i});
+  }else{
+    S.balance-=s; S.stats.net-=s;
+    S.bets[T.key]={stake:s,t,done:false};
+    save(); syncMoney();
+  }
   pushBoth(i,{type:"join",name:S.profile.name,amt:s,extra:0});
   beep(660,.09,"sine",.1); beep(990,.12,"sine",.09,.06);
   if(navigator.vibrate)navigator.vibrate(12);
@@ -1665,8 +1890,9 @@ document.querySelectorAll("#sheet-topup .methods button").forEach(b=>{
     b.style.opacity=".5"; b.disabled=true;
     setTimeout(()=>{
       b.style.opacity=""; b.disabled=false;
-      S.balance+=tuAmount; save(); syncMoney(); closeSheets();
-      toast("✓ "+fmtEUR(tuAmount)+" aufgeladen via "+m+" (Demo)");
+      if(NET.on){ netSend({t:"topup",amt:tuAmount}); } // Server bucht & meldet Guthaben zurück
+      else { S.balance+=tuAmount; save(); syncMoney(); toast("✓ "+fmtEUR(tuAmount)+" aufgeladen via "+m); }
+      closeSheets();
       beep(880,.1,"sine",.1); beep(1320,.16,"sine",.09,.07);
     },900);
   });
@@ -1751,9 +1977,12 @@ function initOnboarding(){
   $("#onb-go").addEventListener("click",()=>{
     if(!idOk)return;
     S.profile={name:$("#onb-name").value.trim().slice(0,16),email:$("#onb-email").value.trim(),ageOk:true,termsOk:true};
-    S.balance=500; save(); syncMoney();
+    if(!NET.on)S.balance=500;
+    save(); syncMoney();
     onb.classList.remove("on");
-    toast("Willkommen, "+S.profile.name+"! 500 € Demo-Guthaben sind drauf");
+    if(NET.on)netSend({t:"hello",token:netToken(),name:S.profile.name}); // Namen am Server setzen
+    toast("Willkommen, "+S.profile.name+"!");
+    handleDeepLink();
   });
   step(1);
 }
@@ -1813,12 +2042,26 @@ window.BZ={
   }
 };
 
+/* ---------- Deep-Link (Einladung) ---------- */
+let deepLinkDone=false;
+function handleDeepLink(){
+  if(deepLinkDone||!NET.on)return;
+  const code=new URLSearchParams(location.search).get("join");
+  if(!code)return;
+  if($("#onb")&&$("#onb").classList.contains("on"))return; // erst nach dem Onboarding beitreten
+  deepLinkDone=true;
+  navigate("priv");
+  netSend({t:"privjoin",code:code.toUpperCase()});
+  toast("Trete Lobby "+code.toUpperCase()+" bei …");
+}
+
 /* ---------- Boot ---------- */
 renderGrid();
 seedFeed();
 renderFeed();
 syncMoney();
 initOnboarding();
+netConnect();
 setInterval(tick,250);
 tick();
 requestAnimationFrame(raf);

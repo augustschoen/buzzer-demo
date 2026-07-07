@@ -1,0 +1,13 @@
+{
+  "name": "buzzer-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BUZZER Phase-1 Backend: Accounts, Guthaben, private Lobbys, server-autoritative Runden (Spielgeld)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
