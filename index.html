@@ -44,6 +44,7 @@ input{font:inherit;color:inherit}
 #net-dot{width:8px;height:8px;border-radius:50%;background:var(--muted2);display:inline-block;vertical-align:middle;transition:background .3s}
 #net-dot.on{background:var(--green);box-shadow:0 0 7px var(--green)}
 #net-dot.off{background:var(--red)}
+#offline-bar{background:#241016;border-bottom:1px solid rgba(206,74,84,.4);color:#E5A3AA;font-size:11.5px;font-weight:700;text-align:center;padding:7px 14px;line-height:1.4}
 #topbar .right{display:flex;align-items:center;gap:16px}
 #balance-pill{display:flex;align-items:baseline;gap:6px;color:var(--gold);font-weight:800;font-size:16px;font-variant-numeric:tabular-nums}
 #balance-pill .plus{font-size:14px;font-weight:900;color:var(--muted)}
@@ -352,6 +353,7 @@ input{font:inherit;color:inherit}
       </button>
     </div>
   </header>
+  <div id="offline-bar" class="hidden">Offline-Modus — du spielst gegen Übungs-Bots. Für echte Freunde: Server-Verbindung nötig.</div>
 
   <main id="main">
     <section id="view-menu" class="view on">
@@ -522,6 +524,8 @@ function updateNetPill(){
   const el=$("#net-dot"); if(!el)return;
   el.className=NET.on?"on":(NET.everConnected?"off":"");
   el.title=NET.on?"Online — mit Server verbunden":"Offline — Simulation";
+  const bar=$("#offline-bar"); if(bar)bar.classList.toggle("hidden",NET.on);
+  if(currentView==="priv")renderPriv(); // Privat je nach Verbindung neu zeichnen
 }
 function netHandle(m){
   switch(m.t){
@@ -1520,11 +1524,21 @@ ovEl.addEventListener("pointerdown",e=>{
   ovEl.innerHTML='<div class="ov-eyebrow">Deine Zeit</div><div class="ov-pot" style="color:var(--violet)">'+fmtMs(ms)+'</div><div class="ov-players">wird mit deinen Freunden abgeglichen …</div><div class="spin"></div>';
 });
 
-/* ---------- Privater Buzzer: OFFLINE-Simulation ---------- */
+/* ---------- Privater Buzzer ---------- */
 const pvRefs={};
 let pvStake=10;
 function renderPriv(){
   if(NET.on)return renderPrivLive();
+  // Ohne Server keine echten Freunde — kein Bot-Fake, sondern klarer Hinweis
+  views.priv.innerHTML=
+    '<div class="backrow"><button class="backbtn" id="pv-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+
+    '<div class="vtitle">👥 Privater Buzzer</div></div>'+
+    '<div class="explain">Private Buzzer mit echten Freunden brauchen eine Server-Verbindung — der Punkt oben am Logo muss <b style="color:var(--green)">grün</b> sein.</div>'+
+    '<div class="explain" style="color:var(--muted2)">Verbinde gerade …</div>';
+  $("#pv-back").addEventListener("click",()=>navigate("menu"));
+  return;
+}
+function renderPrivOffline_unused(){
   if(!S.private){
     views.priv.innerHTML=
       '<div class="backrow"><button class="backbtn" id="pv-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+

@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: buzzer
+    runtime: node
+    plan: free
+    buildCommand: cd server && npm install
+    startCommand: node server/server.js
+    envVars:
+      - key: MAIL_PROVIDER
+        value: brevo
+      - key: MAIL_FROM
+        value: augustschoen14@gmail.com
+      - key: MAIL_FROM_NAME
+        value: BUZZER
+      - key: MAIL_API_KEY
+        sync: false
