@@ -109,8 +109,8 @@ function resolveRound(i,c){
 /* ---------- E-Mail-Versand (Brevo oder Resend; ohne Config → Demo-Fallback) ---------- */
 let MAIL=null;
 if(process.env.MAIL_API_KEY){ // Hosting: Zugang über Umgebungsvariablen (empfohlen)
-  MAIL={provider:process.env.MAIL_PROVIDER||"brevo",apiKey:process.env.MAIL_API_KEY,from:process.env.MAIL_FROM,fromName:process.env.MAIL_FROM_NAME||"BUZZER"};
-  console.log("Mail-Versand aktiv über "+MAIL.provider+" (ENV)");
+  MAIL={provider:process.env.MAIL_PROVIDER||"brevo",apiKey:process.env.MAIL_API_KEY,from:process.env.MAIL_FROM||"buzzerbybetting@gmail.com",fromName:process.env.MAIL_FROM_NAME||"BUZZER"};
+  console.log("Mail-Versand aktiv über "+MAIL.provider+" (ENV), Absender "+MAIL.from);
 }else{
   try{ MAIL=JSON.parse(fs.readFileSync(path.join(__dirname,"mail-config.json"),"utf8")); console.log("Mail-Versand aktiv über "+MAIL.provider+" (Datei)"); }
   catch(e){ console.log("Keine Mail-Config — E-Mail-Codes im Demo-Fallback (Code wird angezeigt)"); }
