@@ -13,83 +13,112 @@
 <style>
   :root{
     --violet:#8A6FD1; --violet-dim:#5F4B99; --gold:#D6B36A;
-    --text:#EDEAF4; --muted:#8E87A0; --muted2:#565064; --line:#221E2E; --line2:#161320;
+    --text:#EDEAF4; --muted:#8E87A0; --muted2:#565064; --line:#242030; --line2:#18141F;
   }
   *{margin:0;padding:0;box-sizing:border-box;border-radius:0!important}
-  html,body{background:#000;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-  body{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px 22px;text-align:center}
-  .logo{font-size:44px;font-weight:900;letter-spacing:-1.5px}
+  html{scroll-behavior:smooth}
+  body{background:#000;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.4}
+  .wrap{max-width:560px;margin:0 auto;padding:0 24px}
+  section{border-top:1px solid var(--line2)}
+  section:first-of-type{border-top:none}
+
+  /* HERO */
+  .hero{min-height:88vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px}
+  .logo{font-size:clamp(46px,13vw,72px);font-weight:900;letter-spacing:-2px;line-height:1}
   .logo .zz{color:var(--violet)}
-  .tag{margin-top:10px;font-size:15px;color:var(--muted);font-weight:600}
-  .buzzer{width:150px;height:150px;border-radius:50%!important;margin:38px auto 6px;position:relative;
+  .tag{margin-top:14px;font-size:clamp(15px,4vw,18px);color:var(--muted);font-weight:600}
+  .buzzer{width:clamp(130px,40vw,180px);aspect-ratio:1;border-radius:50%!important;margin:46px 0;position:relative;
     background:radial-gradient(circle at 36% 30%, #8A6FD1 0%, #5A4499 52%, #2E2257 100%);
-    box-shadow:0 18px 40px rgba(0,0,0,.8), inset 0 6px 14px rgba(255,255,255,.10), inset 0 -12px 26px rgba(0,0,0,.45)}
-  .buzzer::after{content:"";position:absolute;inset:-14px;border-radius:50%!important;border:1px solid rgba(214,179,106,.75)}
-  .steps{display:flex;gap:0;margin:38px 0 6px;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
-  .step{flex:1;padding:16px 10px}
-  .step + .step{border-left:1px solid var(--line2)}
-  .step .n{font-size:10px;font-weight:800;letter-spacing:2px;color:var(--gold)}
-  .step .t{margin-top:6px;font-size:13.5px;font-weight:800;line-height:1.35}
-  .btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px;margin-top:34px}
-  a.btn,button.btn{display:block;width:100%;padding:16px;font-size:15.5px;font-weight:800;text-decoration:none;cursor:pointer;border:none;font-family:inherit}
-  .btn.play{background:var(--violet-dim);color:#fff}
-  .btn.inst{background:transparent;color:var(--text);border:1px solid var(--line);}
-  .btn.inst b{color:var(--gold)}
-  #how{display:none;margin-top:18px;font-size:13px;color:var(--muted);line-height:1.8;max-width:340px}
-  #how b{color:var(--text)}
-  #how.on{display:block}
-  .foot{margin-top:44px;font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase}
-  .plats{margin-top:12px;font-size:11.5px;color:var(--muted2);font-weight:600}
+    box-shadow:0 20px 44px rgba(0,0,0,.8), inset 0 6px 14px rgba(255,255,255,.10), inset 0 -12px 26px rgba(0,0,0,.45)}
+  .buzzer::after{content:"";position:absolute;inset:-15px;border-radius:50%!important;border:1px solid rgba(214,179,106,.75)}
+  .cta{display:block;width:100%;max-width:320px;padding:18px;background:var(--violet-dim);color:#fff;font-size:16px;font-weight:800;text-decoration:none;text-align:center}
+  .scroll{margin-top:34px;font-size:11px;font-weight:800;letter-spacing:2px;color:var(--muted2);text-transform:uppercase}
+
+  /* SECTIONS */
+  .sec{padding:64px 0}
+  .ey{font-size:11px;font-weight:800;letter-spacing:2.5px;color:var(--gold);text-transform:uppercase;text-align:center}
+  .steps{margin-top:34px;display:flex;flex-direction:column;gap:1px;background:var(--line2)}
+  .step{background:#000;display:flex;align-items:center;gap:18px;padding:22px 4px}
+  .step .n{font-size:26px;font-weight:900;color:var(--violet);width:44px;flex:none;text-align:center;font-variant-numeric:tabular-nums}
+  .step .st{font-size:19px;font-weight:800;letter-spacing:-.3px}
+  .step .sd{font-size:13px;color:var(--muted);font-weight:600;margin-top:2px}
+
+  /* INSTALL */
+  .picker{margin-top:30px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .plat{padding:20px 12px;background:#000;border:1px solid var(--line);color:var(--text);font-size:15px;font-weight:800;cursor:pointer;text-align:center;font-family:inherit;transition:border-color .15s}
+  .plat:hover{border-color:var(--violet-dim)}
+  .plat.sel{border-color:var(--violet);color:var(--violet)}
+  .howbox{margin-top:16px;min-height:64px;border-left:2px solid var(--violet-dim);padding:6px 0 6px 16px;font-size:14.5px;color:var(--muted);line-height:1.7;display:none}
+  .howbox.on{display:block}
+  .howbox b{color:var(--text)}
+  .howbox .go{display:inline-block;margin-top:12px;color:var(--gold);font-weight:800;text-decoration:none;border-bottom:1px solid var(--gold)}
+
+  .foot{padding:48px 24px 60px;text-align:center;font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase}
 </style>
 </head>
 <body>
-  <div class="logo">BU<span class="zz">ZZ</span>ER</div>
-  <div class="tag">Der schnellste Daumen holt den Pot.</div>
 
-  <div class="buzzer"></div>
+  <section class="hero">
+    <div class="logo">BU<span class="zz">ZZ</span>ER</div>
+    <div class="tag">Der schnellste Daumen holt den Pot.</div>
+    <div class="buzzer"></div>
+    <a class="cta" href="https://buzzer-demo.onrender.com/">Jetzt spielen</a>
+    <div class="scroll">So geht's ↓</div>
+  </section>
 
-  <div class="steps">
-    <div class="step"><div class="n">01</div><div class="t">Einsatz rein</div></div>
-    <div class="step"><div class="n">02</div><div class="t">Warte aufs GO</div></div>
-    <div class="step"><div class="n">03</div><div class="t">Schnellster<br>kriegt alles</div></div>
-  </div>
+  <section class="sec">
+    <div class="wrap">
+      <div class="ey">So funktioniert's</div>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><div><div class="st">Einsatz rein</div><div class="sd">Wähl deinen Buzzer.</div></div></div>
+        <div class="step"><div class="n">2</div><div><div class="st">Warte auf Grün</div><div class="sd">Kommt jederzeit. Zu früh = raus.</div></div></div>
+        <div class="step"><div class="n">3</div><div><div class="st">Tippen</div><div class="sd">Der Schnellste kriegt alles.</div></div></div>
+      </div>
+    </div>
+  </section>
 
-  <div class="btns">
-    <a class="btn play" href="https://buzzer-demo.onrender.com/">▶&nbsp;&nbsp;Sofort spielen</a>
-    <button class="btn inst" id="inst">⤓&nbsp;&nbsp;Als App installieren — <b id="plat">Mac &amp; Windows</b></button>
-  </div>
-  <div id="how"></div>
-  <div class="plats">💻 Mac &amp; Windows&nbsp;&nbsp;·&nbsp;&nbsp;🤖 Android&nbsp;&nbsp;·&nbsp;&nbsp;📱 iPhone</div>
+  <section class="sec">
+    <div class="wrap">
+      <div class="ey">Als App holen</div>
+      <div class="picker">
+        <button class="plat" data-p="win">Windows</button>
+        <button class="plat" data-p="mac">Mac</button>
+        <button class="plat" data-p="android">Android</button>
+        <button class="plat" data-p="ios">iPhone</button>
+      </div>
+      <div class="howbox" id="howbox"></div>
+    </div>
+  </section>
 
-  <div class="foot">Gratis · Spielgeld · 18+</div>
+  <div class="foot">Gratis &nbsp;·&nbsp; Spielgeld &nbsp;·&nbsp; 18+</div>
 
 <script>
 "use strict";
+const APP="https://buzzer-demo.onrender.com/";
 const ua=navigator.userAgent;
-const isIOS=/iPhone|iPad|iPod/.test(ua);
-const isAndroid=/Android/.test(ua);
-document.getElementById("plat").textContent=isIOS?"iPhone":isAndroid?"Android":"Mac & Windows";
+const detect=/iPhone|iPad|iPod/.test(ua)?"ios":/Android/.test(ua)?"android":/Macintosh/.test(ua)?"mac":"win";
 
 let deferred=null;
 window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); deferred=e; });
 if("serviceWorker" in navigator){ try{ navigator.serviceWorker.register("sw.js"); }catch(e){} }
 
-const how=document.getElementById("how");
-document.getElementById("inst").addEventListener("click",async()=>{
-  if(deferred){ // echter Install-Dialog (Chrome/Edge auf Desktop & Android)
-    deferred.prompt();
-    const r=await deferred.userChoice;
-    if(r&&r.outcome==="accepted"){ document.getElementById("inst").innerHTML="✓&nbsp;&nbsp;Installiert — check dein Startmenü / deinen Homescreen"; }
-    deferred=null;
-    return;
-  }
-  how.innerHTML=isIOS
-    ? "In <b>Safari</b> öffnen → <b>Teilen-Symbol</b> tippen → <b>„Zum Home-Bildschirm"</b>. Fertig."
-    : isAndroid
-    ? "In <b>Chrome</b> öffnen → Menü <b>⋮</b> → <b>„App installieren"</b>. Fertig."
-    : "In <b>Chrome</b> oder <b>Edge</b>: oben rechts in der Adressleiste aufs <b>Installieren-Symbol</b> klicken. Fertig.";
-  how.classList.add("on");
-});
+const HOW={
+  win:'In <b>Chrome</b> oder <b>Edge</b> öffnen. Rechts in der Adressleiste auf das <b>Installieren-Symbol</b> — BUZZER liegt dann im Startmenü.',
+  mac:'In <b>Chrome</b> oder <b>Edge</b> öffnen. Rechts in der Adressleiste auf das <b>Installieren-Symbol</b> — BUZZER liegt dann im Dock.',
+  android:'In <b>Chrome</b> öffnen. Menü <b>oben rechts</b> → <b>App installieren</b>.',
+  ios:'In <b>Safari</b> öffnen. <b>Teilen</b> → <b>Zum Home-Bildschirm</b>.'
+};
+const box=document.getElementById("howbox");
+const btns=[...document.querySelectorAll(".plat")];
+
+function choose(p){
+  btns.forEach(b=>b.classList.toggle("sel",b.dataset.p===p));
+  box.innerHTML=HOW[p]+'<br><a class="go" href="'+APP+'">Seite öffnen</a>';
+  box.classList.add("on");
+  if((p==="win"||p==="mac"||p==="android")&&deferred){ deferred.prompt(); deferred.userChoice.finally(()=>{deferred=null;}); }
+}
+btns.forEach(b=>b.addEventListener("click",()=>choose(b.dataset.p)));
+choose(detect); // passendes gleich vorselektieren
 </script>
 </body>
 </html>
