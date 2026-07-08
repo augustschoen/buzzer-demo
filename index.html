@@ -1441,14 +1441,17 @@ function renderPrivLive(){
       '<div class="vtitle">👥 Privater Buzzer</div></div>'+
       '<div class="explain">Eigener Buzzer für dich und deine Freunde. <b style="color:var(--text)">Du gibst das GO.</b></div>'+
       '<div class="eyebrow">Einsatz pro Person</div><div class="choice" id="pv-stakes"></div>'+
-      '<button class="wide-btn" id="pv-create">Buzzer erstellen — '+fmtEUR(pvStake)+" Einsatz</button>"+
-      '<div class="eyebrow" style="margin-top:26px">Code hast du? Beitreten</div>'+
+      '<input id="pv-custom" inputmode="numeric" placeholder="Eigener Betrag €" autocomplete="off" style="width:100%;background:#000;border:1px solid var(--line);color:var(--text);padding:13px;font-size:15px;font-weight:800;text-align:center;outline:none;font-family:inherit;margin-top:2px">'+
+      '<button class="wide-btn" id="pv-create" style="margin-top:10px">Buzzer erstellen — '+fmtEUR(pvStake)+" Einsatz</button>"+
+      '<div class="eyebrow" style="margin-top:26px">Mit Code beitreten</div>'+
       '<div style="display:flex;gap:8px"><input id="pv-code-in" maxlength="5" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:0;background:#000;border:1px solid var(--line);color:var(--text);padding:14px;font-size:17px;font-weight:900;letter-spacing:4px;text-transform:uppercase;text-align:center;outline:none;font-family:inherit"><button class="wide-btn" id="pv-joinbtn" style="width:auto;margin:0;padding:0 24px;background:var(--bg);border:1px solid var(--line);color:var(--text)">Beitreten</button></div>';
     $("#pv-back").addEventListener("click",()=>navigate("menu"));
-    const sBox=$("#pv-stakes");
+    const sBox=$("#pv-stakes"),cust=$("#pv-custom");
+    const setStake=v=>{ pvStake=v; $("#pv-create").textContent="Buzzer erstellen — "+fmtEUR(v)+" Einsatz"; };
     [1,5,10,20,50,100].forEach(v=>{ const b=document.createElement("button"); b.textContent=fmtEUR(v); if(v===pvStake)b.classList.add("sel");
-      b.addEventListener("click",()=>{pvStake=v;sBox.querySelectorAll("button").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");$("#pv-create").textContent="Buzzer erstellen — "+fmtEUR(v)+" Einsatz";}); sBox.appendChild(b); });
-    $("#pv-create").addEventListener("click",()=>{ chats[PRIV]=[]; netSend({t:"privcreate",stake:pvStake}); });
+      b.addEventListener("click",()=>{ cust.value=""; sBox.querySelectorAll("button").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); setStake(v); }); sBox.appendChild(b); });
+    cust.addEventListener("input",()=>{ const v=parseInt(cust.value.replace(/\D/g,""),10); sBox.querySelectorAll("button").forEach(x=>x.classList.remove("sel")); if(v>=1)setStake(Math.min(1000,v)); });
+    $("#pv-create").addEventListener("click",()=>{ if(pvStake<1){toast("Einsatz wählen");return;} chats[PRIV]=[]; netSend({t:"privcreate",stake:pvStake}); });
     const doJoin=()=>{ const v=$("#pv-code-in").value.trim().toUpperCase(); if(v.length<4){ toast("Code hat 5 Zeichen"); return; } chats[PRIV]=[]; netSend({t:"privjoin",code:v}); };
     $("#pv-joinbtn").addEventListener("click",doJoin);
     $("#pv-code-in").addEventListener("keydown",e=>{ if(e.key==="Enter")doJoin(); });
@@ -1459,7 +1462,7 @@ function renderPrivLive(){
   const pot=L.members.length*L.stake;
   views.priv.innerHTML=
     '<div class="backrow"><button class="backbtn" id="pv-back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>'+
-    '<div class="vtitle">👥 Privat · '+L.code+'</div><div id="d-mode">'+fmtEUR(L.stake)+"</div></div>"+
+    '<div class="vtitle">👥 Privat · <span style="color:var(--gold);letter-spacing:2px">'+L.code+'</span></div><div id="d-mode">'+fmtEUR(L.stake)+"</div></div>"+
     '<div id="d-stage"><button class="buzzer standalone joined" id="pv-buzzer"><span class="b1">DRIN ✓</span><span class="b2">'+(waiting?"WARTET":"GLEICH GEHT'S LOS")+'</span></button>'+
     '<div id="d-stats">'+
       '<div class="dstat"><div class="v gold">'+fmtEUR(pot)+'</div><div class="k">Pot</div></div>'+
@@ -1468,8 +1471,7 @@ function renderPrivLive(){
     "</div></div>"+
     '<div class="mybets" style="margin:2px 0 14px;flex-wrap:wrap">'+L.members.map(n=>'<span class="mybet" style="border-color:var(--line)">'+esc(n)+(n===L.creator?" 👑":"")+"</span>").join("")+"</div>"+
     (waiting
-      ? '<div class="explain" style="margin-top:2px">Code <b style="color:var(--gold);letter-spacing:2px">'+L.code+'</b> — zum Beitreten in der App eingeben.</div>'+
-        (iAmCreator
+      ? (iAmCreator
           ? '<button class="wide-btn" id="pv-start" style="background:var(--green);color:#04140C">START — Einsatz '+fmtEUR(L.stake)+'</button><button class="wide-btn ghost" id="pv-share">Einladungslink teilen</button><button class="wide-btn ghost" id="pv-cancel">Lobby schließen</button>'
           : '<button class="wide-btn ghost" id="pv-share">Einladungslink teilen</button><button class="wide-btn ghost" id="pv-cancel">Lobby verlassen</button><div class="explain" style="margin-top:12px">Warte auf den START von <b style="color:var(--text)">'+esc(L.creator)+'</b>.</div>')
       : '')+
