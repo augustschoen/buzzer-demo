@@ -9,7 +9,7 @@ services:
       - key: MAIL_PROVIDER
         value: brevo
       - key: MAIL_FROM
-        value: augustschoen14@gmail.com
+        value: buzzerbybetting@gmail.com
       - key: MAIL_FROM_NAME
         value: BUZZER
       - key: MAIL_API_KEY
