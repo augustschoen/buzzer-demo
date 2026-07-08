@@ -1441,7 +1441,7 @@ function renderPrivLive(){
       '<div class="vtitle">👥 Privater Buzzer</div></div>'+
       '<div class="explain">Eigener Buzzer für dich und deine Freunde. <b style="color:var(--text)">Du gibst das GO.</b></div>'+
       '<div class="eyebrow">Einsatz pro Person</div><div class="choice" id="pv-stakes"></div>'+
-      '<input id="pv-custom" inputmode="numeric" placeholder="Eigener Betrag €" autocomplete="off" style="width:100%;background:#000;border:1px solid var(--line);color:var(--text);padding:13px;font-size:15px;font-weight:800;text-align:center;outline:none;font-family:inherit;margin-top:2px">'+
+      '<input id="pv-custom" inputmode="decimal" placeholder="Eigener Betrag € (z. B. 12,70)" autocomplete="off" style="width:100%;background:#000;border:1px solid var(--line);color:var(--text);padding:13px;font-size:15px;font-weight:800;text-align:center;outline:none;font-family:inherit;margin-top:2px">'+
       '<button class="wide-btn" id="pv-create" style="margin-top:10px">Buzzer erstellen — '+fmtEUR(pvStake)+" Einsatz</button>"+
       '<div class="eyebrow" style="margin-top:26px">Mit Code beitreten</div>'+
       '<div style="display:flex;gap:8px"><input id="pv-code-in" maxlength="5" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:0;background:#000;border:1px solid var(--line);color:var(--text);padding:14px;font-size:17px;font-weight:900;letter-spacing:4px;text-transform:uppercase;text-align:center;outline:none;font-family:inherit"><button class="wide-btn" id="pv-joinbtn" style="width:auto;margin:0;padding:0 24px;background:var(--bg);border:1px solid var(--line);color:var(--text)">Beitreten</button></div>';
@@ -1450,7 +1450,7 @@ function renderPrivLive(){
     const setStake=v=>{ pvStake=v; $("#pv-create").textContent="Buzzer erstellen — "+fmtEUR(v)+" Einsatz"; };
     [1,5,10,20,50,100].forEach(v=>{ const b=document.createElement("button"); b.textContent=fmtEUR(v); if(v===pvStake)b.classList.add("sel");
       b.addEventListener("click",()=>{ cust.value=""; sBox.querySelectorAll("button").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); setStake(v); }); sBox.appendChild(b); });
-    cust.addEventListener("input",()=>{ const v=parseInt(cust.value.replace(/\D/g,""),10); sBox.querySelectorAll("button").forEach(x=>x.classList.remove("sel")); if(v>=1)setStake(Math.min(1000,v)); });
+    cust.addEventListener("input",()=>{ const v=parseFloat(cust.value.replace(",",".").replace(/[^0-9.]/g,"")); sBox.querySelectorAll("button").forEach(x=>x.classList.remove("sel")); if(v>=0.1)setStake(Math.min(1000,Math.round(v*100)/100)); });
     $("#pv-create").addEventListener("click",()=>{ if(pvStake<1){toast("Einsatz wählen");return;} chats[PRIV]=[]; netSend({t:"privcreate",stake:pvStake}); });
     const doJoin=()=>{ const v=$("#pv-code-in").value.trim().toUpperCase(); if(v.length<4){ toast("Code hat 5 Zeichen"); return; } chats[PRIV]=[]; netSend({t:"privjoin",code:v}); };
     $("#pv-joinbtn").addEventListener("click",doJoin);

@@ -351,7 +351,7 @@ function handleMsg(c,m){
     return;
   }
   if(m.t==="privcreate"){
-    const stake=Math.min(1000,Math.max(1,m.stake|0));
+    const stake=Math.min(1000,Math.max(0.1,Math.round((+m.stake||0)*100)/100)); // Cent-genau
     if(lobbyOfToken(c.token)){ send(c,{t:"privfail",reason:"exists"}); return; } // schon in einer Lobby
     const code=makeCode();
     // Einsatz wird erst beim START eingezogen → Lobby kann mehrere Runden laufen
