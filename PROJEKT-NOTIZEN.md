@@ -69,6 +69,19 @@ Fehlstart-Disqualifikation verhindern Vorab-Tippen.
 - Bewiesen: zwei getrennte Clients in einer Lobby, GO an beide, zentrale Wertung, korrekte
   Auszahlung, Guthaben überlebt Reload.
 
+## Guthaben-Persistenz (wichtig!)
+
+- Render Free-Tier hat **flüchtigen Speicher**: `server/data.json` (Konten+Guthaben) wird bei
+  JEDEM Neustart/Deploy/Spin-down gelöscht → ohne Gegenmaßnahme fällt jeder auf 500 € zurück.
+- **Interim-Fix (08.07.):** Der Client schickt beim Verbinden sein zuletzt bekanntes Guthaben mit
+  (`restore`). Kennt der Server den Token nicht mehr (Daten weg), stellt er dieses Guthaben wieder
+  her statt 500. → Auf demselben Gerät bleibt das Guthaben erhalten. Gedeckelt auf 100.000
+  (Spielgeld). Nachteil: clientseitig manipulierbar + kein Sync über mehrere Geräte.
+- **Echte Lösung (Phase 2/3):** persistente DB (Postgres/Redis, z. B. Neon/Supabase/Render-Paid).
+  Erst damit ist es fälschungssicher und geräteübergreifend — Pflicht für Echtgeld.
+- Green-Fenster: `GREEN_MS=4500` (Client+Server müssen übereinstimmen). Private Runde ohne
+  gültigen Tipp = `voided` → alle bekommen Einsatz zurück (kein verschwundenes Geld).
+
 ## Bekannte Grenzen / bewusste Attrappen
 
 - E-Mail-Code: serverseitig erzeugt & geprüft; **echter Versand sobald `server/mail-config.json`
