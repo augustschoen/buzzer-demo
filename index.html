@@ -489,6 +489,7 @@ const RAKE=0;               // Demo: keine Gebühr ausgewiesen — Monetarisieru
 const CALIB=75, MINMS=92;   // Geräte-Latenz-Kalibrierung (ms)
 const PERIODS={demo:1200000, real:1800000};
 const NAMES=["NovaStrike","Mike_87","luna.exe","QuickFingerz","BlitzKid","jonas_hh","Vexx","MsMillisekunde","turbo_tim","GhostTap","Kira","FlashF1n","NeoJ","SpeedyGnz","0xRapid","HannaBanana","ClickCzar","piXelPete","MiaMoneyy","TapGod","Chr1s","ZoeZoom","Rudi_R","VelvetViper","OTTO","fastlane_","JuliaW","BigPotBob","tiny_tina","Maximus","ping_9ms","AnnikaZ","Der_Daumen","Ricochet","MoneyMika","SnapZ","Elif_x","Timo_x","LagLordLee","frieda.f","BeepBoop","Cassia","Nordlicht","TTV_Blur","paul_pkr","Skrrt","Wrz","Dash_Dee"];
+const GREEN_MS=4500;                // wie lange GRÜN offen bleibt (Reaktions-Fenster)
 const JP=101,PRIV=102;              // Spezial-Buzzer: Jackpot, Privat
 const JP_STAKE=10;
 const RND_BASE=110;                 // Random-Pools: Indizes 110–115
@@ -530,7 +531,7 @@ function netConnect(){
   const url=wsUrl(); if(!url)return;
   let ws; try{ ws=new WebSocket(url); }catch(e){ return; }
   NET.ws=ws;
-  ws.onopen=()=>{ NET.tries=0; netSend({t:"hello",token:netToken(),name:S.profile?S.profile.name:null}); };
+  ws.onopen=()=>{ NET.tries=0; netSend({t:"hello",token:netToken(),name:S.profile?S.profile.name:null,restore:(netToken()&&S.profile)?S.balance:undefined}); };
   ws.onmessage=e=>{ let m; try{m=JSON.parse(e.data);}catch(_){ return; } try{ netHandle(m); }catch(err){} };
   ws.onclose=()=>{ NET.on=false; updateNetPill(); NET.tries++; setTimeout(netConnect,Math.min(8000,800*NET.tries+400)); };
   ws.onerror=()=>{ try{ws.close();}catch(_){} };
@@ -619,7 +620,7 @@ const modeOfIdx=i=>i>=100?"wta":modeOf(STAKES[i]);
 const periodOf=i=>isRnd(i)?RND_PERIOD:i===JP?86400000:i===PRIV?0:period();
 function labelOf(i){ return isRnd(i)?"Random":i===JP?"JACKPOT":i===PRIV?"Privat":fmtStakeShort(STAKES[i])+"€-Pot"; }
 function phaseOf(t,tClose,tCount,tGoBase,tGo){
-  if(t>=tGo+3000)return "result";
+  if(t>=tGo+GREEN_MS)return "result";
   if(t>=tGo)return "live";
   if(t>=tGoBase)return "suspense";
   if(t>=tCount)return "countdown";
@@ -931,7 +932,7 @@ function engage(i,T){
   ovEl.classList.add("on");
   const dGo=T.tGo-now();
   if(dGo>0)engaged.goTimer=setTimeout(fireGo,dGo); else fireGo();
-  engaged.missTimer=setTimeout(()=>{ if(engaged&&!engaged.tapped&&engaged.state!=="dq")finishRound(null,"miss"); },Math.max(50,T.tGo+3000-now()));
+  engaged.missTimer=setTimeout(()=>{ if(engaged&&!engaged.tapped&&engaged.state!=="dq")finishRound(null,"miss"); },Math.max(50,T.tGo+GREEN_MS-now()));
 }
 const ovEl=$("#ov");
 function renderOverlayShell(i,T){
@@ -1441,7 +1442,7 @@ function renderPrivLive(){
       '<div class="vtitle">👥 Privater Buzzer</div></div>'+
       '<div class="explain">Eigener Buzzer für dich und deine Freunde. <b style="color:var(--text)">Du gibst das GO.</b></div>'+
       '<div class="eyebrow">Einsatz pro Person</div><div class="choice" id="pv-stakes"></div>'+
-      '<input id="pv-custom" inputmode="decimal" placeholder="Eigener Betrag € (z. B. 12,70)" autocomplete="off" style="width:100%;background:#000;border:1px solid var(--line);color:var(--text);padding:13px;font-size:15px;font-weight:800;text-align:center;outline:none;font-family:inherit;margin-top:2px">'+
+      '<input id="pv-custom" inputmode="decimal" placeholder="Eigener Betrag €" autocomplete="off" style="width:100%;background:#000;border:1px solid var(--line);color:var(--text);padding:13px;font-size:15px;font-weight:800;text-align:center;outline:none;font-family:inherit;margin-top:2px">'+
       '<button class="wide-btn" id="pv-create" style="margin-top:10px">Buzzer erstellen — '+fmtEUR(pvStake)+" Einsatz</button>"+
       '<div class="eyebrow" style="margin-top:26px">Mit Code beitreten</div>'+
       '<div style="display:flex;gap:8px"><input id="pv-code-in" maxlength="5" placeholder="CODE" autocomplete="off" autocapitalize="characters" spellcheck="false" style="flex:1;min-width:0;background:#000;border:1px solid var(--line);color:var(--text);padding:14px;font-size:17px;font-weight:900;letter-spacing:4px;text-transform:uppercase;text-align:center;outline:none;font-family:inherit"><button class="wide-btn" id="pv-joinbtn" style="width:auto;margin:0;padding:0 24px;background:var(--bg);border:1px solid var(--line);color:var(--text)">Beitreten</button></div>';
@@ -1531,20 +1532,23 @@ function pvResult(m){
   ovEl.classList.remove("go-bg");
   if(m.balance!=null){ S.balance=m.balance; syncMoney(); }
   const won=m.you&&m.you.won>0;
-  // Profil-Statistik & Historie
-  S.stats.plays++;
-  if(won){ S.stats.wins++; S.stats.won+=m.you.won; S.stats.net+=m.you.won; }
-  if(m.you&&m.you.ms!=null&&(S.stats.best==null||m.you.ms<S.stats.best))S.stats.best=m.you.ms;
-  S.hist.unshift({t:now(),i:PRIV,stake:NET.lobby?NET.lobby.stake:0,ms:m.you?m.you.ms:null,prize:won?m.you.won:0});
-  if(S.hist.length>60)S.hist.length=60;
-  save();
+  if(!m.voided){ // ungültige Runde zählt nicht für Statistik/Historie
+    S.stats.plays++;
+    if(won){ S.stats.wins++; S.stats.won+=m.you.won; S.stats.net+=m.you.won; }
+    if(m.you&&m.you.ms!=null&&(S.stats.best==null||m.you.ms<S.stats.best))S.stats.best=m.you.ms;
+    S.hist.unshift({t:now(),i:PRIV,stake:NET.lobby?NET.lobby.stake:0,ms:m.you?m.you.ms:null,prize:won?m.you.won:0});
+    if(S.hist.length>60)S.hist.length=60;
+    save();
+  }
   const rows=(m.ranking||[]).map((r,ix)=>'<div class="pr'+(r.name===(S.profile&&S.profile.name)?" me":"")+'"><span class="rk">'+(ix+1)+'.</span><span class="nm">'+esc(r.name)+'</span><span class="tm">'+(r.ms!=null?fmtMs(r.ms):"—")+'</span></div>').join("");
-  const inner=(won
-      ?'<div class="r-title gold">DU HAST DEN POT! 🏆</div><div class="r-prize">+'+fmtEUR(m.you.won)+'</div>'
-      :'<div class="r-title">'+(m.winner?esc(m.winner.name)+" gewinnt":"Runde beendet")+'</div>'+(m.you&&m.you.ms!=null?'<div class="r-ms">'+fmtMs(m.you.ms)+'</div>':'<div class="r-sub" style="margin-top:8px">Nicht rechtzeitig getippt.</div>'))+
-    '<div class="pod" style="margin-top:14px">'+rows+'</div>'+
+  const inner=m.voided
+      ?'<div class="r-title">Niemand rechtzeitig</div><div class="r-sub" style="margin-top:8px">Runde ungültig — Einsatz zurück.</div>'
+      :(won
+        ?'<div class="r-title gold">DU HAST DEN POT! 🏆</div><div class="r-prize">+'+fmtEUR(m.you.won)+'</div>'
+        :'<div class="r-title">'+(m.winner?esc(m.winner.name)+" gewinnt":"Runde beendet")+'</div>'+(m.you&&m.you.ms!=null?'<div class="r-ms">'+fmtMs(m.you.ms)+'</div>':'<div class="r-sub" style="margin-top:8px">Nicht rechtzeitig getippt.</div>'));
+  const meta='<div class="pod" style="margin-top:14px">'+rows+'</div>'+
     '<div class="r-meta">Privat · Pot '+fmtEUR(m.pot)+' · '+((m.ranking||[]).length)+' Spieler · ohne Gebühr</div>';
-  ovEl.innerHTML='<div class="res '+(won?"win-r":"")+'">'+inner+'<button class="r-btn" id="ov-close">Weiter</button></div>';
+  ovEl.innerHTML='<div class="res '+(won?"win-r":"")+'">'+inner+meta+'<button class="r-btn" id="ov-close">Weiter</button></div>';
   ovEl.classList.add("on");
   $("#ov-close").addEventListener("click",()=>{ ovEl.classList.remove("on","go-bg"); ovEl.innerHTML=""; PV.active=false; navigate(NET.lobby?"priv":"menu"); });
   if(won){ confetti(); winSound(); }

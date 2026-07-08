@@ -35,6 +35,7 @@ const isRnd=i=>i>=RND_BASE&&i<RND_BASE+RND_STAKES.length;
 const RND_PERIOD=180000;
 const PERIOD=1200000; // Rundenlänge klassisch: 20 min
 const RAKE=0;
+const GREEN_MS=4500; // wie lange GRÜN offen bleibt (muss mit Client übereinstimmen)
 const MINMS=92;
 const NAMES=["NovaStrike","Mike_87","luna.exe","QuickFingerz","BlitzKid","jonas_hh","Vexx","MsMillisekunde","turbo_tim","GhostTap","Kira","FlashF1n","NeoJ","SpeedyGnz","0xRapid","HannaBanana","ClickCzar","piXelPete","MiaMoneyy","TapGod","Chr1s","ZoeZoom","Rudi_R","VelvetViper","OTTO","fastlane_","JuliaW","BigPotBob","tiny_tina","Maximus","ping_9ms","AnnikaZ","Der_Daumen","Ricochet","MoneyMika","SnapZ","Elif_x","Timo_x","LagLordLee","frieda.f","BeepBoop","Cassia","Nordlicht","TTV_Blur","paul_pkr","Skrrt","Wrz","Dash_Dee"];
 
@@ -48,7 +49,7 @@ const modeOf=stake=>(stake>=200&&stake<=1000)?"top3":"wta";
 const stakeOf=i=>isRnd(i)?RND_STAKES[i-RND_BASE]:i===JP?JP_STAKE:STAKES[i];
 const modeOfIdx=i=>i>=100?"wta":modeOf(STAKES[i]);
 function phaseOf(t,tClose,tCount,tGoBase,tGo){
-  if(t>=tGo+3000)return "result";
+  if(t>=tGo+GREEN_MS)return "result";
   if(t>=tGo)return "live";
   if(t>=tGoBase)return "suspense";
   if(t>=tCount)return "countdown";
@@ -227,14 +228,14 @@ setInterval(()=>{
     const sig=T.key+"|"+T.phase;
     if(lastPhase[i]!==sig){
       lastPhase[i]=sig;
-      if(T.phase==="result")setTimeout(()=>resolvePublic(i,times(i,T.tGo+3100)),900); // kleine Gnadenfrist für späte Taps
+      if(T.phase==="result")setTimeout(()=>resolvePublic(i,times(i,T.tGo+GREEN_MS+100)),900); // kleine Gnadenfrist für späte Taps
     }
   }
   // Private Lobbys fortschreiben
   for(const code of Object.keys(lobbies)){
     const L=lobbies[code];
     if(L.goAt&&!L.goSent&&t>=L.goAt){ L.goSent=true; lobbyCast(L,{t:"privgo",code}); }
-    if(L.goAt&&!L.resolved&&t>=L.goAt+3800)resolveLobby(L);
+    if(L.goAt&&!L.resolved&&t>=L.goAt+GREEN_MS+700)resolveLobby(L);
     if(!L.startAt&&t-(L.lastActive||L.createdAt)>3600000){ disbandLobby(L,"Lobby wegen Inaktivität geschlossen"); } // 1 h idle → auflösen
   }
 },250);
@@ -254,14 +255,19 @@ function resolveLobby(L){
     .sort((a,b)=>(a.ms==null?1e9:a.ms)-(b.ms==null?1e9:b.ms));
   // Zeitgleiche Erste teilen sich den Pot (kein Doppel-Payout)
   const winners=ranked[0]&&ranked[0].ms!=null?ranked.filter(r=>r.ms===ranked[0].ms):[];
+  const voided=winners.length===0; // niemand hat rechtzeitig getippt → Runde ungültig, Einsatz zurück
   const share=winners.length?pot/winners.length:0;
-  for(const w of winners){ const u=userOf(w.token); if(u){ u.balance+=share; u.stats.wins++; ensureDay(u); u.day.won+=share; } }
+  if(voided){
+    for(const m of L.members){ const u=userOf(m.token); if(u)u.balance+=L.stake; } // Einsatz zurück
+  }else{
+    for(const w of winners){ const u=userOf(w.token); if(u){ u.balance+=share; u.stats.wins++; ensureDay(u); u.day.won+=share; } }
+  }
   for(const m of L.members){ const u=userOf(m.token); if(u){ u.stats.plays++; ensureDay(u); u.day.bets++; if(typeof L.taps[m.token]==="number"){ const ms=Math.max(MINMS,L.taps[m.token]); if(u.day.best==null||ms<u.day.best)u.day.best=ms; if(u.stats.best==null||ms<u.stats.best)u.stats.best=ms; } } }
   save();
   const winnerInfo=winners.length?{name:winners.map(w=>w.name).join(" & "),ms:winners[0].ms}:null;
   for(const c of conns){
     const me=ranked.find(r=>r.token===c.token);
-    if(me){ const u=userOf(c.token); const myWin=winners.some(w=>w.token===c.token)?share:0; send(c,{t:"privresult",code:L.code,pot,winner:winnerInfo,ranking:ranked.map(r=>({name:r.name,ms:r.ms})),you:{ms:me.ms,won:myWin},balance:u?u.balance:0}); }
+    if(me){ const u=userOf(c.token); const myWin=winners.some(w=>w.token===c.token)?share:0; send(c,{t:"privresult",code:L.code,pot,winner:winnerInfo,voided,ranking:ranked.map(r=>({name:r.name,ms:r.ms})),you:{ms:me.ms,won:myWin},balance:u?u.balance:0}); }
   }
   // Lobby bleibt bestehen — für die nächste Runde zurücksetzen
   L.startAt=null; L.goAt=null; L.goSent=false; L.taps={}; L.resolved=false; L.lastActive=now();
@@ -274,8 +280,12 @@ function handleMsg(c,m){
   if(m.t==="hello"){
     let token=m.token&&DB.users[m.token]?m.token:null;
     if(!token){
+      // Neuer Nutzer → 500. Kannte das Gerät aber schon ein Konto (Server-Daten verloren),
+      // wird das zuletzt bekannte Guthaben wiederhergestellt, statt auf 500 zurückzufallen.
+      let bal=500;
+      if(m.token&&typeof m.restore==="number"&&m.restore>=0)bal=Math.min(100000,Math.round(m.restore*100)/100);
       token=crypto.randomUUID();
-      DB.users[token]={name:sanitizeName(m.name),balance:500,createdAt:t,stats:{plays:0,wins:0,net:0,best:null},day:{k:dayKey(),best:null,won:0,bets:0}};
+      DB.users[token]={name:sanitizeName(m.name),balance:bal,createdAt:t,stats:{plays:0,wins:0,net:0,best:null},day:{k:dayKey(),best:null,won:0,bets:0}};
       save();
     }else if(m.name){ DB.users[token].name=sanitizeName(m.name); save(); }
     c.token=token; c.name=DB.users[token].name;
