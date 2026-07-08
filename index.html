@@ -9,6 +9,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BUZZER">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-title" content="BUZZER">
 <style>
 :root{
   --bg:#000000;
@@ -2141,6 +2145,7 @@ renderFeed();
 syncMoney();
 initOnboarding();
 netConnect();
+if("serviceWorker" in navigator&&location.protocol!=="file:"){ try{ navigator.serviceWorker.register("sw.js"); }catch(e){} }
 setInterval(tick,250);
 tick();
 requestAnimationFrame(raf);

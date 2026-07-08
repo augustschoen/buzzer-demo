@@ -432,6 +432,22 @@ const server=http.createServer((req,res)=>{
     });
     return;
   }
+  // Statische PWA-Dateien (Whitelist)
+  const ROOT=path.dirname(APP_FILE);
+  const staticMap={
+    "/manifest.webmanifest":{f:"manifest.webmanifest",ct:"application/manifest+json",cc:"no-cache"},
+    "/sw.js":{f:"sw.js",ct:"text/javascript; charset=utf-8",cc:"no-cache"}
+  };
+  let st=staticMap[url];
+  if(!st&&/^\/icons\/[a-z0-9\-]+\.png$/.test(url))st={f:url.slice(1),ct:"image/png",cc:"public, max-age=86400"};
+  if(st){
+    fs.readFile(path.join(ROOT,st.f),(err,data)=>{
+      if(err){ res.writeHead(404); res.end("404"); return; }
+      res.writeHead(200,{"Content-Type":st.ct,"Cache-Control":st.cc});
+      res.end(data);
+    });
+    return;
+  }
   res.writeHead(404); res.end("404");
 });
 

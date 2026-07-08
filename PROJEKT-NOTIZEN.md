@@ -76,6 +76,20 @@ Fehlstart-Disqualifikation verhindern Vorab-Tippen.
 - Push aufs gesperrte Handy: erst mit nativer App/echtem Push-Dienst.
 - Tunnel-Hosting (trycloudflare) ist temporär — PC muss laufen, URL wechselt.
 
+## Installierbare App (Stand 08.07.)
+
+- App ist eine **PWA**: manifest.webmanifest + sw.js (Netz zuerst — immer neueste Version,
+  Cache nur Offline-Fallback) + icons/ (matter violetter Buzzer, Gold-Ring, schwarz).
+  Installierbar: Desktop Win/Mac (Chrome/Edge Adressleisten-Icon „Installieren"),
+  Android (Chrome-Hinweis „App installieren"), iPhone (Teilen → Zum Home-Bildschirm).
+- **Crypto-Einzahlung ändert die Rechtslage NICHT** (Augusts Frage 08.07.): Einsatz um
+  Vermögenswerte = Glücksspielrecht, egal ob € oder Coin; Crypto-Casinos laufen über
+  Offshore-Lizenzen (Curaçao etc.) — genau das strukturiert der Gaming-Anwalt in Phase 3.
+  Echtgeld (auch Crypto) erst nach Firma + Anwalt + Lizenz/PSP.
+- **App Store / Play Store**: Weg = Capacitor-Hülle um dieselbe App (+echte Pushes).
+  Benötigt von August: Apple Developer Account (99 $/Jahr) + Mac oder Cloud-Build
+  (Codemagic); Google Play Console (25 $ einmalig, Build geht von Windows).
+
 ## Roadmap
 
 1. **Hosting-Entscheidung** (offen): Render/Railway/Fly/VPS mit Augusts Account → fester Link.
