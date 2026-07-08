@@ -436,7 +436,9 @@ const server=http.createServer((req,res)=>{
   const ROOT=path.dirname(APP_FILE);
   const staticMap={
     "/manifest.webmanifest":{f:"manifest.webmanifest",ct:"application/manifest+json",cc:"no-cache"},
-    "/sw.js":{f:"sw.js",ct:"text/javascript; charset=utf-8",cc:"no-cache"}
+    "/sw.js":{f:"sw.js",ct:"text/javascript; charset=utf-8",cc:"no-cache"},
+    "/start":{f:"landing.html",ct:"text/html; charset=utf-8",cc:"no-cache"},
+    "/landing.html":{f:"landing.html",ct:"text/html; charset=utf-8",cc:"no-cache"}
   };
   let st=staticMap[url];
   if(!st&&/^\/icons\/[a-z0-9\-]+\.png$/.test(url))st={f:url.slice(1),ct:"image/png",cc:"public, max-age=86400"};

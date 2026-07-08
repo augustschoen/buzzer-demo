@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>BUZZER — Der schnellste Daumen holt den Pot</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta property="og:title" content="BUZZER">
+<meta property="og:description" content="Der schnellste Daumen holt den Pot.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+  :root{
+    --violet:#8A6FD1; --violet-dim:#5F4B99; --gold:#D6B36A;
+    --text:#EDEAF4; --muted:#8E87A0; --muted2:#565064; --line:#221E2E; --line2:#161320;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;border-radius:0!important}
+  html,body{background:#000;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  body{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:44px 22px;text-align:center}
+  .logo{font-size:44px;font-weight:900;letter-spacing:-1.5px}
+  .logo .zz{color:var(--violet)}
+  .tag{margin-top:10px;font-size:15px;color:var(--muted);font-weight:600}
+  .buzzer{width:150px;height:150px;border-radius:50%!important;margin:38px auto 6px;position:relative;
+    background:radial-gradient(circle at 36% 30%, #8A6FD1 0%, #5A4499 52%, #2E2257 100%);
+    box-shadow:0 18px 40px rgba(0,0,0,.8), inset 0 6px 14px rgba(255,255,255,.10), inset 0 -12px 26px rgba(0,0,0,.45)}
+  .buzzer::after{content:"";position:absolute;inset:-14px;border-radius:50%!important;border:1px solid rgba(214,179,106,.75)}
+  .steps{display:flex;gap:0;margin:38px 0 6px;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
+  .step{flex:1;padding:16px 10px}
+  .step + .step{border-left:1px solid var(--line2)}
+  .step .n{font-size:10px;font-weight:800;letter-spacing:2px;color:var(--gold)}
+  .step .t{margin-top:6px;font-size:13.5px;font-weight:800;line-height:1.35}
+  .btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px;margin-top:34px}
+  a.btn,button.btn{display:block;width:100%;padding:16px;font-size:15.5px;font-weight:800;text-decoration:none;cursor:pointer;border:none;font-family:inherit}
+  .btn.play{background:var(--violet-dim);color:#fff}
+  .btn.inst{background:transparent;color:var(--text);border:1px solid var(--line);}
+  .btn.inst b{color:var(--gold)}
+  #how{display:none;margin-top:18px;font-size:13px;color:var(--muted);line-height:1.8;max-width:340px}
+  #how b{color:var(--text)}
+  #how.on{display:block}
+  .foot{margin-top:44px;font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase}
+  .plats{margin-top:12px;font-size:11.5px;color:var(--muted2);font-weight:600}
+</style>
+</head>
+<body>
+  <div class="logo">BU<span class="zz">ZZ</span>ER</div>
+  <div class="tag">Der schnellste Daumen holt den Pot.</div>
+
+  <div class="buzzer"></div>
+
+  <div class="steps">
+    <div class="step"><div class="n">01</div><div class="t">Einsatz rein</div></div>
+    <div class="step"><div class="n">02</div><div class="t">Warte aufs GO</div></div>
+    <div class="step"><div class="n">03</div><div class="t">Schnellster<br>kriegt alles</div></div>
+  </div>
+
+  <div class="btns">
+    <a class="btn play" href="https://buzzer-demo.onrender.com/">▶&nbsp;&nbsp;Sofort spielen</a>
+    <button class="btn inst" id="inst">⤓&nbsp;&nbsp;Als App installieren — <b id="plat">Mac &amp; Windows</b></button>
+  </div>
+  <div id="how"></div>
+  <div class="plats">💻 Mac &amp; Windows&nbsp;&nbsp;·&nbsp;&nbsp;🤖 Android&nbsp;&nbsp;·&nbsp;&nbsp;📱 iPhone</div>
+
+  <div class="foot">Gratis · Spielgeld · 18+</div>
+
+<script>
+"use strict";
+const ua=navigator.userAgent;
+const isIOS=/iPhone|iPad|iPod/.test(ua);
+const isAndroid=/Android/.test(ua);
+document.getElementById("plat").textContent=isIOS?"iPhone":isAndroid?"Android":"Mac & Windows";
+
+let deferred=null;
+window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); deferred=e; });
+if("serviceWorker" in navigator){ try{ navigator.serviceWorker.register("sw.js"); }catch(e){} }
+
+const how=document.getElementById("how");
+document.getElementById("inst").addEventListener("click",async()=>{
+  if(deferred){ // echter Install-Dialog (Chrome/Edge auf Desktop & Android)
+    deferred.prompt();
+    const r=await deferred.userChoice;
+    if(r&&r.outcome==="accepted"){ document.getElementById("inst").innerHTML="✓&nbsp;&nbsp;Installiert — check dein Startmenü / deinen Homescreen"; }
+    deferred=null;
+    return;
+  }
+  how.innerHTML=isIOS
+    ? "In <b>Safari</b> öffnen → <b>Teilen-Symbol</b> tippen → <b>„Zum Home-Bildschirm"</b>. Fertig."
+    : isAndroid
+    ? "In <b>Chrome</b> öffnen → Menü <b>⋮</b> → <b>„App installieren"</b>. Fertig."
+    : "In <b>Chrome</b> oder <b>Edge</b>: oben rechts in der Adressleiste aufs <b>Installieren-Symbol</b> klicken. Fertig.";
+  how.classList.add("on");
+});
+</script>
+</body>
+</html>
