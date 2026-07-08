@@ -251,26 +251,30 @@ function lobbyOfToken(token){ for(const code of Object.keys(lobbies))if(lobbies[
 function resolveLobby(L){
   L.resolved=true;
   const pot=L.members.length*L.stake; // 0% Gebühr — kompletter Pot
-  const ranked=L.members.map(m=>({name:m.name,token:m.token,ms:(typeof L.taps[m.token]==="number")?Math.max(MINMS,L.taps[m.token]):null}))
-    .sort((a,b)=>(a.ms==null?1e9:a.ms)-(b.ms==null?1e9:b.ms));
-  // Zeitgleiche Erste teilen sich den Pot (kein Doppel-Payout)
-  const winners=ranked[0]&&ranked[0].ms!=null?ranked.filter(r=>r.ms===ranked[0].ms):[];
-  const voided=winners.length===0; // niemand hat rechtzeitig getippt → Runde ungültig, Einsatz zurück
+  const dq=tok=>!!L.dq[tok];
+  const ranked=L.members.map(m=>({name:m.name,token:m.token,dq:dq(m.token),ms:(!dq(m.token)&&typeof L.taps[m.token]==="number")?Math.max(MINMS,L.taps[m.token]):null}))
+    .sort((a,b)=>(a.dq?1:0)-(b.dq?1:0)||(a.ms==null?1e9:a.ms)-(b.ms==null?1e9:b.ms));
+  const tappers=ranked.filter(r=>!r.dq&&r.ms!=null);
+  const alive=L.members.filter(m=>!dq(m.token)); // nicht disqualifiziert
+  let winners=[],walkover=false,voided=false;
+  if(tappers.length){ const best=tappers[0].ms; winners=tappers.filter(r=>r.ms===best); } // Schnellste (zeitgleich → teilen)
+  else if(alive.length===1){ winners=ranked.filter(r=>r.token===alive[0].token); walkover=true; } // letzter Übriggebliebener gewinnt ohne Tipp
+  else { voided=true; } // niemand gültig & mehrere übrig → ungültig
   const share=winners.length?pot/winners.length:0;
   if(voided){
-    for(const m of L.members){ const u=userOf(m.token); if(u)u.balance+=L.stake; } // Einsatz zurück
+    for(const m of L.members){ const u=userOf(m.token); if(u)u.balance+=L.stake; } // alle: Einsatz zurück
   }else{
     for(const w of winners){ const u=userOf(w.token); if(u){ u.balance+=share; u.stats.wins++; ensureDay(u); u.day.won+=share; } }
   }
-  for(const m of L.members){ const u=userOf(m.token); if(u){ u.stats.plays++; ensureDay(u); u.day.bets++; if(typeof L.taps[m.token]==="number"){ const ms=Math.max(MINMS,L.taps[m.token]); if(u.day.best==null||ms<u.day.best)u.day.best=ms; if(u.stats.best==null||ms<u.stats.best)u.stats.best=ms; } } }
+  for(const m of L.members){ const u=userOf(m.token); if(u){ u.stats.plays++; ensureDay(u); u.day.bets++; if(!dq(m.token)&&typeof L.taps[m.token]==="number"){ const ms=Math.max(MINMS,L.taps[m.token]); if(u.day.best==null||ms<u.day.best)u.day.best=ms; if(u.stats.best==null||ms<u.stats.best)u.stats.best=ms; } } }
   save();
   const winnerInfo=winners.length?{name:winners.map(w=>w.name).join(" & "),ms:winners[0].ms}:null;
   for(const c of conns){
     const me=ranked.find(r=>r.token===c.token);
-    if(me){ const u=userOf(c.token); const myWin=winners.some(w=>w.token===c.token)?share:0; send(c,{t:"privresult",code:L.code,pot,winner:winnerInfo,voided,ranking:ranked.map(r=>({name:r.name,ms:r.ms})),you:{ms:me.ms,won:myWin},balance:u?u.balance:0}); }
+    if(me){ const u=userOf(c.token); const myWin=winners.some(w=>w.token===c.token)?share:0; send(c,{t:"privresult",code:L.code,pot,winner:winnerInfo,voided,walkover,ranking:ranked.map(r=>({name:r.name,ms:r.ms,dq:r.dq})),you:{ms:me.ms,won:myWin,dq:me.dq},balance:u?u.balance:0}); }
   }
   // Lobby bleibt bestehen — für die nächste Runde zurücksetzen
-  L.startAt=null; L.goAt=null; L.goSent=false; L.taps={}; L.resolved=false; L.lastActive=now();
+  L.startAt=null; L.goAt=null; L.goSent=false; L.taps={}; L.dq={}; L.resolved=false; L.lastActive=now();
   lobbyCast(L,lobbyState(L));
 }
 
@@ -365,7 +369,7 @@ function handleMsg(c,m){
     if(lobbyOfToken(c.token)){ send(c,{t:"privfail",reason:"exists"}); return; } // schon in einer Lobby
     const code=makeCode();
     // Einsatz wird erst beim START eingezogen → Lobby kann mehrere Runden laufen
-    lobbies[code]={code,stake,creator:c.token,creatorName:u.name,members:[{token:c.token,name:u.name}],createdAt:t,lastActive:t,startAt:null,goAt:null,goSent:false,taps:{},resolved:false,round:0};
+    lobbies[code]={code,stake,creator:c.token,creatorName:u.name,members:[{token:c.token,name:u.name}],createdAt:t,lastActive:t,startAt:null,goAt:null,goSent:false,taps:{},dq:{},resolved:false,round:0};
     send(c,lobbyState(lobbies[code]));
     return;
   }
@@ -392,7 +396,7 @@ function handleMsg(c,m){
     }
     L.members=paid; save();
     if(L.members.length<1){ disbandLobby(L,"Niemand konnte den Einsatz zahlen"); return; }
-    L.round=(L.round||0)+1; L.taps={}; L.resolved=false; L.goSent=false; L.lastActive=t;
+    L.round=(L.round||0)+1; L.taps={}; L.dq={}; L.resolved=false; L.goSent=false; L.lastActive=t;
     L.startAt=t+30000;                          // Timer zählt 30 s bis 0
     L.goAt=L.startAt+2000+Math.random()*3000;   // dann 2–5 s geheimer Jitter bis grün
     lobbyCast(L,lobbyState(L));
@@ -409,7 +413,19 @@ function handleMsg(c,m){
     const L=lobbies[String(m.code||"").toUpperCase()];
     if(!L||!L.goSent||L.resolved)return;
     if(!L.members.some(x=>x.token===c.token))return;
+    if(L.dq[c.token])return; // disqualifiziert
     if(L.taps[c.token]==null&&typeof m.ms==="number"&&m.ms>=0&&m.ms<10000)L.taps[c.token]=m.ms;
+    return;
+  }
+  if(m.t==="privfalse"){ // Fehlstart (vor GO getippt) → disqualifiziert
+    const L=lobbies[String(m.code||"").toUpperCase()];
+    if(!L||L.resolved||L.startAt==null)return;
+    if(!L.members.some(x=>x.token===c.token))return;
+    L.dq[c.token]=true;
+    // Wenn dadurch nur noch einer NICHT disqualifiziert ist → Walkover, sofort auflösen
+    const alive=L.members.filter(x=>!L.dq[x.token]);
+    lobbyCast(L,{t:"privchat",code:L.code,name:u.name,dq:true});
+    if(L.goSent&&alive.length<=1)resolveLobby(L);
     return;
   }
   if(m.t==="privchat"){

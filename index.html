@@ -584,6 +584,7 @@ function netHandle(m){
       break;
     case "privchat":
       if(m.join)pushChat(PRIV,{type:"sys",text:esc(m.name)+" ist dabei"});
+      else if(m.dq)pushChat(PRIV,{type:"sys",text:esc(m.name)+" war zu früh — draußen"});
       else if(m.name!==(S.profile&&S.profile.name))pushChat(PRIV,{type:"user",name:m.name,text:m.text});
       break;
     case "privfail":
@@ -1540,12 +1541,15 @@ function pvResult(m){
     if(S.hist.length>60)S.hist.length=60;
     save();
   }
-  const rows=(m.ranking||[]).map((r,ix)=>'<div class="pr'+(r.name===(S.profile&&S.profile.name)?" me":"")+'"><span class="rk">'+(ix+1)+'.</span><span class="nm">'+esc(r.name)+'</span><span class="tm">'+(r.ms!=null?fmtMs(r.ms):"—")+'</span></div>').join("");
-  const inner=m.voided
-      ?'<div class="r-title">Niemand rechtzeitig</div><div class="r-sub" style="margin-top:8px">Runde ungültig — Einsatz zurück.</div>'
-      :(won
-        ?'<div class="r-title gold">DU HAST DEN POT! 🏆</div><div class="r-prize">+'+fmtEUR(m.you.won)+'</div>'
-        :'<div class="r-title">'+(m.winner?esc(m.winner.name)+" gewinnt":"Runde beendet")+'</div>'+(m.you&&m.you.ms!=null?'<div class="r-ms">'+fmtMs(m.you.ms)+'</div>':'<div class="r-sub" style="margin-top:8px">Nicht rechtzeitig getippt.</div>'));
+  const meDq=m.you&&m.you.dq;
+  const rows=(m.ranking||[]).map((r,ix)=>'<div class="pr'+(r.name===(S.profile&&S.profile.name)?" me":"")+'"><span class="rk">'+(r.dq?"–":(ix+1)+".")+'</span><span class="nm">'+esc(r.name)+'</span><span class="tm"'+(r.dq?' style="color:var(--red)"':"")+'>'+(r.dq?"Fehlstart":(r.ms!=null?fmtMs(r.ms):"—"))+'</span></div>').join("");
+  const inner=won
+      ?'<div class="r-title gold">'+(m.walkover?"DU GEWINNST!":"DU HAST DEN POT! 🏆")+'</div>'+(m.walkover?'<div class="r-sub" style="margin:6px 0">Alle anderen zu früh gestartet.</div>':"")+'<div class="r-prize">+'+fmtEUR(m.you.won)+'</div>'
+      :meDq
+        ?'<div class="r-title red">Fehlstart! ⚡</div><div class="r-sub" style="margin-top:8px">Zu früh — Einsatz weg.</div>'
+        :m.voided
+          ?'<div class="r-title">Niemand rechtzeitig</div><div class="r-sub" style="margin-top:8px">Runde ungültig — Einsatz zurück.</div>'
+          :'<div class="r-title">'+(m.winner?esc(m.winner.name)+" gewinnt":"Runde beendet")+'</div>'+(m.you&&m.you.ms!=null?'<div class="r-ms">'+fmtMs(m.you.ms)+'</div>':'<div class="r-sub" style="margin-top:8px">Nicht rechtzeitig getippt.</div>');
   const meta='<div class="pod" style="margin-top:14px">'+rows+'</div>'+
     '<div class="r-meta">Privat · Pot '+fmtEUR(m.pot)+' · '+((m.ranking||[]).length)+' Spieler · ohne Gebühr</div>';
   ovEl.innerHTML='<div class="res '+(won?"win-r":"")+'">'+inner+meta+'<button class="r-btn" id="ov-close">Weiter</button></div>';
@@ -1565,11 +1569,11 @@ function wireChatNet(pfx,idx){
 ovEl.addEventListener("pointerdown",e=>{
   if(engaged||!PV.active)return;
   if(PV.tapped||PV.false)return;
-  if(!ovEl.classList.contains("go-bg")){ // vor GO getippt = Fehlstart
+  if(!ovEl.classList.contains("go-bg")){ // vor GO getippt = Fehlstart → disqualifiziert
     e.preventDefault(); PV.false=true; PV.active=false;
+    netSend({t:"privfalse",code:NET.lobby?NET.lobby.code:null}); // Server merkt sich die DQ
     ovEl.classList.remove("go-bg");
-    ovEl.innerHTML='<div class="res"><div class="r-title red">Fehlstart! ⚡</div><div class="r-ms" style="font-size:22px">Zu früh getippt</div><button class="r-btn" id="ov-close">Weiter</button></div>';
-    $("#ov-close").addEventListener("click",()=>{ ovEl.classList.remove("on"); ovEl.innerHTML=""; });
+    ovEl.innerHTML='<div class="res"><div class="r-title red">Fehlstart! ⚡</div><div class="r-ms" style="font-size:22px">Zu früh — Einsatz weg</div><div class="ov-players">Ergebnis kommt gleich …</div><div class="spin"></div></div>';
     beep(140,.4,"sawtooth",.18); if(navigator.vibrate)navigator.vibrate([60,40,60]);
     return;
   }
