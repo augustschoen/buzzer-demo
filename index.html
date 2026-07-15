@@ -517,11 +517,16 @@ const now=()=>Date.now()+timeOffset;
 /* ---------- Netzwerk (Phase-1 Backend) ---------- */
 /* Mit Server: Guthaben + private Lobbys sind echt & geteilt.
    Ohne Server (z. B. GitHub Pages): App läuft als Offline-Simulation weiter. */
+const DEFAULT_SRV="buzzer-demo.onrender.com"; // dauerhafter Spiel-Server (Cloud, läuft immer)
 const SRV_OVERRIDE=new URLSearchParams(location.search).get("srv");
 function wsUrl(){
+  if(SRV_OVERRIDE==="off")return null; // Offline-Simulation erzwingen (nur für Tests)
   if(SRV_OVERRIDE)return (SRV_OVERRIDE.indexOf("ws")===0?SRV_OVERRIDE:(location.protocol==="https:"?"wss://":"ws://")+SRV_OVERRIDE)+"/ws";
-  if(location.protocol==="file:")return null; // lokal geöffnet → offline
-  return (location.protocol==="https:"?"wss://":"ws://")+location.host+"/ws";
+  // Wird die Seite von einem eigenen Server ausgeliefert → mit dem verbinden
+  const ownServer=location.port==="8787"||location.host.endsWith(".onrender.com")||location.host.endsWith(".trycloudflare.com");
+  if(ownServer)return (location.protocol==="https:"?"wss://":"ws://")+location.host+"/ws";
+  // Sonst (GitHub Pages, Home-Icon, lokal geöffnet …) → immer zum Cloud-Server
+  return "wss://"+DEFAULT_SRV+"/ws";
 }
 const NET={ws:null,on:false,tries:0,lobby:null,everConnected:false};
 function netStoreToken(tok){ try{localStorage.setItem("bz_token",tok);}catch(e){} }
@@ -540,7 +545,13 @@ function updateNetPill(){
   const el=$("#net-dot"); if(!el)return;
   el.className=NET.on?"on":(NET.everConnected?"off":"");
   el.title=NET.on?"Online — mit Server verbunden":"Offline — Simulation";
-  const bar=$("#offline-bar"); if(bar)bar.classList.toggle("hidden",NET.on);
+  const bar=$("#offline-bar");
+  if(bar){
+    bar.classList.toggle("hidden",NET.on);
+    if(!NET.on)bar.textContent=NET.everConnected
+      ?"Verbindung weg — verbinde neu …"
+      :(NET.tries<10?"Verbinde mit Server — beim ersten Mal bis zu 1 Minute …":"Offline-Modus — du spielst gegen Übungs-Bots.");
+  }
   if(currentView==="priv")renderPriv(); // Privat je nach Verbindung neu zeichnen
 }
 function netHandle(m){
