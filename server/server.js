@@ -175,6 +175,9 @@ async function dbInit(){
   console.log("Postgres verbunden — "+r.rows.length+" Konten geladen");
 }
 
+let ADMIN_KEY=process.env.ADMIN_KEY||null;
+if(!ADMIN_KEY){ try{ ADMIN_KEY=JSON.parse(fs.readFileSync(path.join(__dirname,"db-config.json"),"utf8")).adminKey||null; }catch(e){} }
+
 function logEvent(token,type,amount,meta){ // Ereignis-Protokoll: jede Aktion mit Zeitstempel
   if(!PGPOOL)return;
   PGPOOL.query("INSERT INTO events(token,type,amount,meta) VALUES($1,$2,$3,$4)",
@@ -537,6 +540,64 @@ const server=http.createServer((req,res)=>{
     res.end(JSON.stringify({buzzer:true,build:BUILD,serverNow:now(),online:[...conns].filter(x=>x.token).length,mail:!!(MAIL&&MAIL.apiKey),mailFrom:MAIL?MAIL.from:null,db:!!PGPOOL}));
     return;
   }
+  if(url==="/api/admin/stats"){
+    const q=new URL(req.url,"http://x");
+    if(!ADMIN_KEY||q.searchParams.get("key")!==ADMIN_KEY){ res.writeHead(401,{"Content-Type":"application/json"}); res.end('{"error":"key"}'); return; }
+    if(!PGPOOL){ res.writeHead(503,{"Content-Type":"application/json"}); res.end('{"error":"nodb"}'); return; }
+    (async()=>{
+      const one=async(sql,params)=> (await PGPOOL.query(sql,params||[])).rows;
+      const TZ="Europe/Berlin";
+      const [tot,neu7,neu1,balSum,mkt,tupAll,tup7,tup1,rndAll,rnd7,rnd1]=await Promise.all([
+        one("SELECT COUNT(*)::int c FROM users"),
+        one("SELECT COUNT(*)::int c FROM users WHERE created_at>now()-interval '7 days'"),
+        one("SELECT COUNT(*)::int c FROM users WHERE created_at>now()-interval '1 day'"),
+        one("SELECT COALESCE(SUM(balance),0)::float s FROM users"),
+        one("SELECT COUNT(*)::int c FROM users WHERE marketing"),
+        one("SELECT COUNT(*)::int c, COALESCE(SUM(amount),0)::float s FROM events WHERE type='topup'"),
+        one("SELECT COUNT(*)::int c, COALESCE(SUM(amount),0)::float s FROM events WHERE type='topup' AND at>now()-interval '7 days'"),
+        one("SELECT COUNT(*)::int c, COALESCE(SUM(amount),0)::float s FROM events WHERE type='topup' AND at>now()-interval '1 day'"),
+        one("SELECT COUNT(*)::int c FROM events WHERE type IN('round_result','priv_result')"),
+        one("SELECT COUNT(*)::int c FROM events WHERE type IN('round_result','priv_result') AND at>now()-interval '7 days'"),
+        one("SELECT COUNT(*)::int c FROM events WHERE type IN('round_result','priv_result') AND at>now()-interval '1 day'")
+      ]);
+      const dayseries=async(sql)=>{
+        const rows=await one(sql);
+        const map={}; for(const r of rows)map[r.d]=+r.v;
+        const out=[];
+        for(let k=13;k>=0;k--){
+          const dt=new Date(Date.now()-k*86400000);
+          const label=new Intl.DateTimeFormat("de-DE",{day:"2-digit",month:"2-digit",timeZone:TZ}).format(dt);
+          out.push({d:label,v:map[label]||0});
+        }
+        return out;
+      };
+      const [sigD,tupD,rndD]=await Promise.all([
+        dayseries(`SELECT to_char(created_at AT TIME ZONE '${TZ}','DD.MM.') d, COUNT(*)::float v FROM users WHERE created_at>now()-interval '14 days' GROUP BY 1`),
+        dayseries(`SELECT to_char(at AT TIME ZONE '${TZ}','DD.MM.') d, COALESCE(SUM(amount),0)::float v FROM events WHERE type='topup' AND at>now()-interval '14 days' GROUP BY 1`),
+        dayseries(`SELECT to_char(at AT TIME ZONE '${TZ}','DD.MM.') d, COUNT(*)::float v FROM events WHERE type IN('round_result','priv_result') AND at>now()-interval '14 days' GROUP BY 1`)
+      ]);
+      const [winners,active,payers,recent]=await Promise.all([
+        one(`SELECT COALESCE(u.name,'—') name, ROUND(SUM(e.amount)::numeric,2)::float v, COUNT(*)::int n FROM events e LEFT JOIN users u ON u.token=e.token
+             WHERE e.type IN('round_result','priv_result') AND e.amount>0 AND e.at>now()-interval '7 days' GROUP BY 1 ORDER BY v DESC LIMIT 8`),
+        one(`SELECT COALESCE(u.name,'—') name, COUNT(*)::int v FROM events e LEFT JOIN users u ON u.token=e.token
+             WHERE e.type IN('round_result','priv_result') AND e.at>now()-interval '7 days' GROUP BY 1 ORDER BY v DESC LIMIT 8`),
+        one(`SELECT COALESCE(u.name,'—') name, ROUND(SUM(e.amount)::numeric,2)::float v, COUNT(*)::int n FROM events e LEFT JOIN users u ON u.token=e.token
+             WHERE e.type='topup' GROUP BY 1 ORDER BY v DESC LIMIT 8`),
+        one(`SELECT COALESCE(u.name,'—') name, e.type, e.amount::float amount, to_char(e.at AT TIME ZONE '${TZ}','DD.MM. HH24:MI') zeit
+             FROM events e LEFT JOIN users u ON u.token=e.token ORDER BY e.id DESC LIMIT 25`)
+      ]);
+      res.writeHead(200,{"Content-Type":"application/json","Cache-Control":"no-cache"});
+      res.end(JSON.stringify({
+        online:[...conns].filter(x=>x.token).length,
+        users:{total:tot[0].c,neu7:neu7[0].c,neu1:neu1[0].c,balance:balSum[0].s,marketing:mkt[0].c},
+        topups:{all:tupAll[0],d7:tup7[0],d1:tup1[0]},
+        rounds:{all:rndAll[0].c,d7:rnd7[0].c,d1:rnd1[0].c},
+        charts:{signups:sigD,topups:tupD,rounds:rndD},
+        tables:{winners,active,payers,recent}
+      }));
+    })().catch(e=>{ console.error("admin stats:",e.message); res.writeHead(500,{"Content-Type":"application/json"}); res.end('{"error":"fail"}'); });
+    return;
+  }
   if(url==="/"||url==="/index.html"){
     fs.readFile(APP_FILE,(err,data)=>{
       if(err){ res.writeHead(500); res.end("App nicht gefunden"); return; }
@@ -551,7 +612,8 @@ const server=http.createServer((req,res)=>{
     "/manifest.webmanifest":{f:"manifest.webmanifest",ct:"application/manifest+json",cc:"no-cache"},
     "/sw.js":{f:"sw.js",ct:"text/javascript; charset=utf-8",cc:"no-cache"},
     "/start":{f:"landing.html",ct:"text/html; charset=utf-8",cc:"no-cache"},
-    "/landing.html":{f:"landing.html",ct:"text/html; charset=utf-8",cc:"no-cache"}
+    "/landing.html":{f:"landing.html",ct:"text/html; charset=utf-8",cc:"no-cache"},
+    "/admin":{f:"admin.html",ct:"text/html; charset=utf-8",cc:"no-cache"}
   };
   let st=staticMap[url];
   if(!st&&/^\/icons\/[a-z0-9\-]+\.png$/.test(url))st={f:url.slice(1),ct:"image/png",cc:"public, max-age=86400"};

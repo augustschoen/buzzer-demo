@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>BUZZER — Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --violet:#8A6FD1; --violet-dim:#5F4B99; --gold:#D6B36A; --gold-bar:#BA8830;
+    --green:#4FA97C; --red:#CE4A54;
+    --text:#EDEAF4; --muted:#8E87A0; --muted2:#565064; --line:#242030; --line2:#18141F;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;border-radius:0!important}
+  body{background:#000;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;padding:22px 18px 60px;max-width:1060px;margin:0 auto}
+  h1{font-size:22px;font-weight:900;letter-spacing:-.5px}
+  h1 .zz{color:var(--violet)}
+  .sub{font-size:11px;color:var(--muted2);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-top:3px}
+  .topbar{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+  .refresh{background:none;border:1px solid var(--line);color:var(--muted);font-weight:700;font-size:12px;padding:9px 14px;cursor:pointer;font-family:inherit}
+  /* Login-Gate */
+  #gate{max-width:340px;margin:16vh auto 0;text-align:center}
+  #gate input{width:100%;background:#000;border:1px solid var(--line);color:var(--text);padding:14px;font-size:15px;font-weight:700;text-align:center;outline:none;font-family:inherit;margin:14px 0 10px}
+  #gate button{width:100%;padding:14px;background:var(--violet-dim);color:#fff;border:none;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer}
+  #gate .err{color:var(--red);font-size:12px;font-weight:700;margin-top:10px;min-height:16px}
+  /* Kacheln */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line2);border:1px solid var(--line2);margin-bottom:26px}
+  .tile{background:#000;padding:16px 14px}
+  .tile .v{font-size:24px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+  .tile .v.gold{color:var(--gold)}
+  .tile .v.green{color:var(--green)}
+  .tile .k{font-size:9px;font-weight:800;letter-spacing:1.6px;color:var(--muted2);text-transform:uppercase;margin-top:5px}
+  .tile .s{font-size:11px;color:var(--muted);font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
+  /* Charts */
+  .charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:26px;margin-bottom:30px}
+  .chart h3{font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .bars{display:flex;align-items:flex-end;gap:2px;height:110px;border-bottom:1px solid var(--line)}
+  .bar{flex:1;min-width:6px;background:var(--violet);position:relative;cursor:default}
+  .bar.gold{background:var(--gold-bar)}
+  .bar.zero{background:var(--line2);height:2px!important}
+  .bar:hover::after{content:attr(data-v);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:4px;font-size:10.5px;font-weight:800;color:var(--text);background:#15121D;border:1px solid var(--line);padding:2px 6px;white-space:nowrap;z-index:2}
+  .xlabels{display:flex;gap:2px;margin-top:5px}
+  .xlabels span{flex:1;min-width:6px;font-size:8.5px;color:var(--muted2);text-align:center;font-variant-numeric:tabular-nums;overflow:hidden}
+  .peak{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:3px;font-size:10px;font-weight:800;color:var(--muted);white-space:nowrap}
+  /* Tabellen */
+  .grids{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:26px}
+  .tbl h3{font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{text-align:left;font-size:9px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted2);padding:7px 8px;border-bottom:1px solid var(--line)}
+  td{padding:8px;border-bottom:1px solid var(--line2);font-weight:600;font-variant-numeric:tabular-nums}
+  td.r,th.r{text-align:right}
+  td .gold{color:var(--gold);font-weight:800}
+  td .muted{color:var(--muted2)}
+  #err{color:var(--red);font-weight:700;font-size:13px;margin:20px 0;display:none}
+  #dash{display:none}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <h1>BU<span class="zz">ZZ</span>ER <span style="color:var(--muted2);font-weight:700;font-size:14px">Admin</span></h1>
+  <input id="key" type="password" placeholder="Admin-Schlüssel" autocomplete="off">
+  <button id="go">Öffnen</button>
+  <div class="err" id="gate-err"></div>
+</div>
+
+<div id="dash">
+  <div class="topbar">
+    <div><h1>BU<span class="zz">ZZ</span>ER <span style="color:var(--muted2);font-weight:700;font-size:14px">Admin</span></h1>
+    <div class="sub" id="stand">–</div></div>
+    <button class="refresh" id="reload">Aktualisieren</button>
+  </div>
+  <div class="tiles" id="tiles"></div>
+  <div class="charts">
+    <div class="chart"><h3>Neue Nutzer / Tag</h3><div class="bars" id="c-sig"></div><div class="xlabels" id="x-sig"></div></div>
+    <div class="chart"><h3>Einzahlungen € / Tag</h3><div class="bars" id="c-tup"></div><div class="xlabels" id="x-tup"></div></div>
+    <div class="chart"><h3>Runden / Tag</h3><div class="bars" id="c-rnd"></div><div class="xlabels" id="x-rnd"></div></div>
+  </div>
+  <div class="grids">
+    <div class="tbl"><h3>Top-Gewinner · 7 Tage</h3><table id="t-win"></table></div>
+    <div class="tbl"><h3>Aktivste Spieler · 7 Tage</h3><table id="t-act"></table></div>
+    <div class="tbl"><h3>Top-Einzahler · gesamt</h3><table id="t-pay"></table></div>
+    <div class="tbl"><h3>Letzte Ereignisse</h3><table id="t-rec"></table></div>
+  </div>
+  <div id="err"></div>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const eur=n=>new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:Math.abs(n-Math.round(n))<0.005?0:2}).format(n);
+const TYPES={signup:"Anmeldung",signup_restore:"Anmeldung (Restore)",login:"Login",topup:"Aufladung",bet_placed:"Einsatz",round_result:"Rundenergebnis",priv_created:"Privat erstellt",priv_joined:"Privat beigetreten",priv_stake:"Privat-Einsatz",priv_result:"Privat-Ergebnis",email_verified:"E-Mail bestätigt",consent_marketing:"Werbe-Einwilligung"};
+
+function bars(el,xel,data,gold,fmt){
+  const max=Math.max(1,...data.map(d=>d.v));
+  el.innerHTML=data.map(d=>{
+    const h=Math.round(d.v/max*100);
+    const peak=d.v===max&&max>0?'<span class="peak">'+fmt(d.v)+"</span>":"";
+    return '<div class="bar'+(gold?" gold":"")+(d.v===0?" zero":"")+'" style="height:'+Math.max(2,h)+'%" data-v="'+d.d+": "+fmt(d.v)+'">'+peak+"</div>";
+  }).join("");
+  xel.innerHTML=data.map((d,i)=>'<span>'+(i%3===0?d.d.slice(0,5):"")+"</span>").join("");
+}
+function rows(el,head,items,cells){
+  el.innerHTML="<tr>"+head.map((h,i)=>"<th"+(i>0?' class="r"':"")+">"+h+"</th>").join("")+"</tr>"+
+    (items.length?items.map(cells).join(""):'<tr><td colspan="'+head.length+'" style="color:var(--muted2)">Noch keine Daten</td></tr>');
+}
+
+async function load(){
+  const key=localStorage.getItem("bz_admin_key");
+  if(!key){ $("#gate").style.display="block"; $("#dash").style.display="none"; return; }
+  try{
+    const r=await fetch("/api/admin/stats?key="+encodeURIComponent(key));
+    if(r.status===401){ localStorage.removeItem("bz_admin_key"); $("#gate-err").textContent="Schlüssel falsch"; load(); return; }
+    const d=await r.json();
+    $("#gate").style.display="none"; $("#dash").style.display="block";
+    $("#stand").textContent="Stand "+new Date().toLocaleTimeString("de-DE")+" · aktualisiert sich automatisch";
+    $("#tiles").innerHTML=
+      '<div class="tile"><div class="v">'+d.users.total+'</div><div class="k">Nutzer</div><div class="s">+'+d.users.neu7+" in 7 Tagen · +"+d.users.neu1+" heute</div></div>"+
+      '<div class="tile"><div class="v green">'+d.online+'</div><div class="k">Jetzt online</div><div class="s">&nbsp;</div></div>'+
+      '<div class="tile"><div class="v gold">'+eur(d.users.balance)+'</div><div class="k">Guthaben im Umlauf</div><div class="s">&nbsp;</div></div>'+
+      '<div class="tile"><div class="v gold">'+eur(d.topups.all.s)+'</div><div class="k">Einzahlungen gesamt</div><div class="s">'+d.topups.all.c+"x · 7 Tage: "+eur(d.topups.d7.s)+"</div></div>"+
+      '<div class="tile"><div class="v">'+d.rounds.all+'</div><div class="k">Runden gesamt</div><div class="s">7 Tage: '+d.rounds.d7+" · heute: "+d.rounds.d1+"</div></div>"+
+      '<div class="tile"><div class="v">'+d.users.marketing+'</div><div class="k">Werbe-Opt-ins</div><div class="s">von '+d.users.total+" Nutzern</div></div>";
+    bars($("#c-sig"),$("#x-sig"),d.charts.signups,false,v=>v.toFixed(0));
+    bars($("#c-tup"),$("#x-tup"),d.charts.topups,true,v=>eur(v));
+    bars($("#c-rnd"),$("#x-rnd"),d.charts.rounds,false,v=>v.toFixed(0));
+    rows($("#t-win"),["Name","Gewonnen","Runden"],d.tables.winners,x=>"<tr><td>"+x.name+'</td><td class="r"><span class="gold">+'+eur(x.v)+'</span></td><td class="r">'+x.n+"</td></tr>");
+    rows($("#t-act"),["Name","Runden"],d.tables.active,x=>"<tr><td>"+x.name+'</td><td class="r">'+x.v+"</td></tr>");
+    rows($("#t-pay"),["Name","Eingezahlt","Aufladungen"],d.tables.payers,x=>"<tr><td>"+x.name+'</td><td class="r"><span class="gold">'+eur(x.v)+'</span></td><td class="r">'+x.n+"</td></tr>");
+    rows($("#t-rec"),["Zeit","Nutzer","Aktion","Betrag"],d.tables.recent,x=>'<tr><td class="muted">'+x.zeit+"</td><td>"+x.name+"</td><td>"+(TYPES[x.type]||x.type)+'</td><td class="r">'+(x.amount==null?'<span class="muted">—</span>':eur(x.amount))+"</td></tr>");
+  }catch(e){
+    $("#err").style.display="block"; $("#err").textContent="Server nicht erreichbar — gleich nochmal.";
+  }
+}
+$("#go").addEventListener("click",()=>{ const v=$("#key").value.trim(); if(!v)return; localStorage.setItem("bz_admin_key",v); $("#gate-err").textContent=""; load(); });
+$("#key").addEventListener("keydown",e=>{ if(e.key==="Enter")$("#go").click(); });
+$("#reload").addEventListener("click",load);
+setInterval(load,60000);
+load();
+</script>
+</body>
+</html>
