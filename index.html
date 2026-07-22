@@ -300,13 +300,16 @@ input{font:inherit;color:inherit}
 #ov .res .r-sub{font-size:12.5px;color:var(--muted);line-height:1.6}
 #ov .res .r-prize{font-size:34px;font-weight:900;color:var(--gold);font-variant-numeric:tabular-nums;margin:12px 0 0}
 #ov .res .r-loss{font-size:20px;font-weight:900;color:var(--red);margin:12px 0 0}
-#ov .res .pod{margin:16px 0 4px;border-top:1px solid var(--line2)}
-#ov .res .pod .pr{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line2);padding:9px 2px;font-size:13px;font-weight:700}
-#ov .res .pod .pr.me{background:#0D0B12}
-#ov .res .pod .pr .rk{font-weight:900;color:var(--violet);width:22px;text-align:left}
+#ov .res .pod{margin:16px 0 4px;max-height:38vh;overflow-y:auto;scrollbar-width:none}
+#ov .res .pod .pr{display:flex;align-items:center;gap:10px;border:1px solid transparent;border-bottom:1px solid var(--line2);padding:8px 9px;font-size:13px;font-weight:700}
+#ov .res .pod .pr.me{border:1px solid var(--violet-dim);background:#0D0B12}
+#ov .res .pod .pr.goldbox{border:1px solid var(--gold);background:rgba(214,179,106,.07)}
+#ov .res .pod .pr .rk{font-weight:900;color:var(--violet);width:26px;text-align:left}
+#ov .res .pod .pr.goldbox .rk{color:var(--gold)}
 #ov .res .pod .pr .nm{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #ov .res .pod .pr .tm{font-variant-numeric:tabular-nums;color:var(--muted2);font-size:11.5px}
 #ov .res .pod .pr .pz{font-variant-numeric:tabular-nums;color:var(--gold);font-weight:900}
+#ov .res .pod .tail-sep{color:var(--muted2);font-size:11px;letter-spacing:3px;padding:3px 0}
 #ov .res .r-meta{font-size:11px;color:var(--muted2);margin-top:12px;line-height:1.7}
 #ov .res .r-btn{width:100%;margin-top:16px;padding:14px;background:var(--violet-dim);color:#fff;font-weight:800;font-size:15px}
 
@@ -352,13 +355,44 @@ input{font:inherit;color:inherit}
 #tut .t-dot.on{background:var(--violet)}
 #tut .t-btn{padding:14px 22px;background:var(--violet-dim);color:#fff;border:none;font-weight:800;font-size:14.5px;font-family:inherit;min-width:112px}
 #tut .t-btn.ghost{background:none;border:1px solid var(--line);color:var(--muted);min-width:0}
-#tut .t-big{font-size:58px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-2px;transition:color .2s}
-#tut .t-circle{width:132px;height:132px;border-radius:50%!important;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;background:radial-gradient(circle at 36% 30%, #8A6FD1 0%, #5A4499 52%, #2E2257 100%);box-shadow:0 14px 30px rgba(0,0,0,.7);transition:background .25s}
-#tut .t-circle.green{background:radial-gradient(circle at 36% 30%, #58A981 0%, #3B7E5D 55%, #1C4433 100%)}
-#tut .t-pot{font-size:46px;font-weight:900;color:var(--gold);font-variant-numeric:tabular-nums;letter-spacing:-1px}
-#tut .t-chip{position:absolute;top:56%;font-weight:800;color:var(--green);font-size:16px;opacity:0;transition:opacity .25s, transform .6s ease-out}
-#tut .t-ms{font-size:15px;font-weight:800;margin-top:14px;font-variant-numeric:tabular-nums;opacity:0;transition:opacity .3s}
-#tut .t-win{font-size:36px;font-weight:900;color:var(--gold);margin-top:6px;opacity:0;transform:scale(.6);transition:all .35s}
+#tut .t-big{font-size:56px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-2px;transition:color .2s}
+#tut .t-cdk{font-size:10px;font-weight:800;letter-spacing:2.5px;color:var(--muted2);margin-top:6px}
+/* Mini-App-Screen */
+#tut .t-frame{width:100%;max-width:300px;border:1px solid var(--line);background:#000;padding:16px 16px 14px;position:relative;text-align:left}
+#tut .t-frame.t-center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:190px;text-align:center}
+#tut .t-fhead{display:flex;justify-content:space-between;font-size:12px;font-weight:800;margin-bottom:14px}
+#tut .t-flive{color:var(--green);font-size:10.5px;letter-spacing:1px;text-transform:uppercase}
+#tut .t-fbuzzer{width:104px;height:104px;border-radius:50%!important;margin:2px auto 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:radial-gradient(circle at 36% 30%, #8A6FD1 0%, #5A4499 52%, #2E2257 100%);box-shadow:0 10px 24px rgba(0,0,0,.7)}
+#tut .t-fbuzzer b{font-size:20px;font-weight:900}
+#tut .t-fbuzzer small{font-size:7.5px;font-weight:800;letter-spacing:1.4px;color:rgba(255,255,255,.75)}
+#tut .t-fstats{display:flex;border-top:1px solid var(--line2)}
+#tut .t-fstats>div{flex:1;text-align:center;padding:10px 4px 2px}
+#tut .t-fstats>div+div{border-left:1px solid var(--line2)}
+#tut .t-fstats b{font-size:15px;font-weight:900;font-variant-numeric:tabular-nums;display:block}
+#tut .t-fstats b.gold{color:var(--gold)}
+#tut .t-fstats i{font-style:normal;font-size:8px;font-weight:800;letter-spacing:1.5px;color:var(--muted2);text-transform:uppercase}
+#tut .t-chip{position:absolute;left:50%;top:52%;transform:translateX(-50%);font-weight:900;color:var(--green);font-size:16px;opacity:0;transition:opacity .25s, transform .6s ease-out}
+/* Vollbild-Grün wie im Spiel */
+#tut .t-flash{position:absolute;inset:0;z-index:6;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+#tut .t-flash.on{display:flex}
+#tut .t-flash.green{background:radial-gradient(circle at 50% 42%, #2FBF71 0%, #17683C 62%, #0B3A21 100%)}
+#tut .t-flash.black{background:#000}
+#tut .t-flash .f-go{font-size:84px;font-weight:900;letter-spacing:-2px;color:#fff}
+#tut .t-flash .f-ey{font-size:11px;font-weight:800;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+#tut .t-flash .f-ms{font-size:44px;font-weight:900;color:var(--violet);font-variant-numeric:tabular-nums;letter-spacing:-1px}
+/* Sieger-Board (Slide 3) */
+#tut .t-board{width:100%;max-width:300px;text-align:center}
+#tut .t-board .b-title{font-size:19px;font-weight:900;color:var(--gold);margin-bottom:2px}
+#tut .t-board .b-prize{font-size:32px;font-weight:900;color:var(--gold);margin-bottom:12px;opacity:0;transform:scale(.6);transition:all .35s}
+#tut .t-board .b-prize.on{opacity:1;transform:scale(1)}
+#tut .t-board .pr{display:flex;align-items:center;gap:9px;border:1px solid transparent;border-bottom:1px solid var(--line2);padding:8px 9px;font-size:12.5px;font-weight:700;text-align:left;opacity:0;transform:translateY(8px);transition:all .3s}
+#tut .t-board .pr.show{opacity:1;transform:translateY(0)}
+#tut .t-board .pr.goldbox{border:1px solid var(--gold);background:rgba(214,179,106,.07)}
+#tut .t-board .pr .rk{font-weight:900;color:var(--violet);width:20px}
+#tut .t-board .pr.goldbox .rk{color:var(--gold)}
+#tut .t-board .pr .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#tut .t-board .pr .tm{font-variant-numeric:tabular-nums;color:var(--muted2);font-size:11px}
+#tut .t-board .pr .pz{color:var(--gold);font-weight:900;font-variant-numeric:tabular-nums}
 
 /* ---------- toast / confetti ---------- */
 #toast{position:fixed;left:50%;bottom:calc(34px + var(--sab));transform:translateX(-50%) translateY(16px);z-index:110;
@@ -484,15 +518,31 @@ input{font:inherit;color:inherit}
   <button class="t-skip" id="tut-skip">Überspringen</button>
   <div class="t-stage">
     <div class="t-slide on">
-      <div class="t-anim"><div class="t-pot" id="tt-pot">120 €</div><div class="t-chip" id="tt-chip">+5 €</div><div style="font-size:11px;letter-spacing:2px;color:var(--muted2);font-weight:800;margin-top:8px">POT</div></div>
+      <div class="t-anim">
+        <div class="t-frame">
+          <div class="t-fhead"><span>10 € Buzzer</span><span class="t-flive">● offen</span></div>
+          <div class="t-fbuzzer"><b>10 €</b><small>TIPPEN = EINSATZ</small></div>
+          <div class="t-fstats">
+            <div><b class="gold" id="tt-pot">120 €</b><i>Pot</i></div>
+            <div><b id="tt-pl">12</b><i>Spieler</i></div>
+            <div><b>2:41</b><i>GO in</i></div>
+          </div>
+          <div class="t-chip" id="tt-chip">+10 €</div>
+        </div>
+      </div>
       <h2>Einsatz rein</h2><div class="t-p">Alle zahlen ein. Der Pot wächst.</div>
     </div>
     <div class="t-slide">
-      <div class="t-anim"><div class="t-big" id="tt-cd">0:03</div></div>
+      <div class="t-anim">
+        <div class="t-frame t-center">
+          <div class="t-big" id="tt-cd">0:05</div>
+          <div class="t-cdk">GO IN</div>
+        </div>
+      </div>
       <h2>Warte auf Grün</h2><div class="t-p">Timer auf null — Grün kommt kurz danach.<br>Zu früh getippt = raus.</div>
     </div>
     <div class="t-slide">
-      <div class="t-anim"><div class="t-circle" id="tt-go">…</div><div class="t-ms" id="tt-ms">163,42 ms</div><div class="t-win" id="tt-win">+245 €</div></div>
+      <div class="t-anim"><div id="tt-board"></div></div>
       <h2>Schnellster gewinnt</h2><div class="t-p">Ein Tipp — der ganze Pot gehört dir.</div>
     </div>
   </div>
@@ -501,6 +551,7 @@ input{font:inherit;color:inherit}
     <div class="t-dots"><span class="t-dot on"></span><span class="t-dot"></span><span class="t-dot"></span></div>
     <button class="t-btn" id="tut-next">Weiter</button>
   </div>
+  <div class="t-flash" id="tt-flash"></div>
 </div>
 
 <div id="dim" class="dim"></div>
@@ -764,7 +815,8 @@ function resolveRound(i,c){
   arr.sort((a,b)=>a-b);
   const pool=i===PRIV?FRIENDS:NAMES;
   const nm=()=>pool[Math.floor(r()*pool.length)];
-  return resolved[key]={players,times:arr,winner:nm(),second:nm(),third:nm(),winnerMs:arr[0]};
+  const names=[]; for(let k=0;k<10;k++)names.push(nm()); // Top-10-Namen fürs Ranking
+  return resolved[key]={players,times:arr,names,winner:names[0],second:names[1],third:names[2],winnerMs:arr[0]};
 }
 function settleUser(i,c,userMs){ // userMs: number | null (verpasst) | "dq"
   const key=i+":"+c; const bet=S.bets[key];
@@ -1052,17 +1104,24 @@ function showResultPanel(o){
   }else if(res){
     const won=res.prize>0, first=res.rank===1;
     const mode=res.mode||modeOf(res.stake);
-    let pod="";
-    if(mode==="top3"){
-      const shares=[.6,.25,.15];
-      const rows=[{name:res.R.winner,ms:res.R.winnerMs},{name:res.R.second,ms:res.R.times[1]||res.R.winnerMs+38},{name:res.R.third,ms:res.R.times[2]||res.R.winnerMs+72}];
-      if(res.rank>=1&&res.rank<=3){ rows.splice(res.rank-1,0,{name:S.profile.name,ms:res.userMs,me:true}); rows.length=3; }
-      pod='<div class="pod">'+rows.map((r,ix)=>
-        '<div class="pr'+(r.me?" me":"")+'"><span class="rk">'+(ix+1)+".</span><span class=\"nm\">"+esc(r.name)+'</span><span class="tm">'+fmtMs(r.ms)+'</span><span class="pz">'+fmtEUR(res.potNet*shares[ix])+"</span></div>").join("")+"</div>";
+    // Ranking: immer Top 10 — Gold-Kästchen für Geldränge, Lila für dich, eigene Platzierung unten wenn >10
+    const goldMax=mode==="top3"?3:1;
+    const shares={1:mode==="top3"?0.6:1,2:0.25,3:0.15};
+    const rows=[]; let b=0;
+    for(let k=1;k<=Math.min(10,res.playersTotal);k++){
+      if(k===res.rank)rows.push({rank:k,name:S.profile.name,ms:res.userMs,me:true});
+      else{ rows.push({rank:k,name:res.R.names[b%res.R.names.length],ms:res.R.times[Math.min(b,res.R.times.length-1)],me:false}); b++; }
     }
+    const rowHtml=r=>{
+      const gold=r.rank<=goldMax;
+      return '<div class="pr'+(gold?" goldbox":r.me?" me":"")+'"><span class="rk">'+r.rank+'.</span><span class="nm">'+esc(r.name)+(r.me?" (Du)":"")+'</span><span class="tm">'+(r.ms!=null?fmtMs(r.ms):"—")+"</span>"+
+        (gold?'<span class="pz">+'+fmtEUR(res.potNet*shares[r.rank])+"</span>":"")+"</div>";
+    };
+    let pod='<div class="pod">'+rows.map(rowHtml).join("");
+    if(res.rank>10)pod+='<div class="tail-sep">· · ·</div>'+rowHtml({rank:res.rank,name:S.profile.name,ms:res.userMs,me:true});
+    pod+="</div>";
     inner='<div class="r-title '+(won?"gold":"")+'">'+(first?"DU HAST DEN POT! 🏆":won?"Top "+res.rank+"!":"Platz "+res.rank+" von "+res.playersTotal)+"</div>"+
       '<div class="r-ms">'+fmtMs(res.userMs)+"</div>"+
-      '<div class="r-sub">'+(first?"Niemand war schneller als du.":"Schnellster: <b>"+esc(res.R.winner)+"</b> mit "+fmtMs(res.R.winnerMs))+"</div>"+
       (won?'<div class="r-prize">+'+fmtEUR(res.prize)+"</div>":'<div class="r-loss">−'+fmtEUR(res.stake)+"</div>")+
       pod+
       '<div class="r-meta">Pot '+fmtEUR(res.potGross)+" · "+res.playersTotal+" Spieler · "+(mode==="wta"?"Winner takes all":"Top 3 · 60/25/15")+"</div>";
@@ -1601,7 +1660,12 @@ function pvResult(m){
     save();
   }
   const meDq=m.you&&m.you.dq;
-  const rows=(m.ranking||[]).map((r,ix)=>'<div class="pr'+(r.name===(S.profile&&S.profile.name)?" me":"")+'"><span class="rk">'+(r.dq?"–":(ix+1)+".")+'</span><span class="nm">'+esc(r.name)+'</span><span class="tm"'+(r.dq?' style="color:var(--red)"':"")+'>'+(r.dq?"Fehlstart":(r.ms!=null?fmtMs(r.ms):"—"))+'</span></div>').join("");
+  const winNames=m.winner&&!m.voided?m.winner.name.split(" & "):[];
+  const rows=(m.ranking||[]).map((r,ix)=>{
+    const isMe=r.name===(S.profile&&S.profile.name);
+    const gold=!r.dq&&winNames.indexOf(r.name)>=0;
+    return '<div class="pr'+(gold?" goldbox":isMe?" me":"")+'"><span class="rk">'+(r.dq?"–":(ix+1)+".")+'</span><span class="nm">'+esc(r.name)+(isMe?" (Du)":"")+'</span><span class="tm"'+(r.dq?' style="color:var(--red)"':"")+'>'+(r.dq?"Fehlstart":(r.ms!=null?fmtMs(r.ms):"—"))+"</span></div>";
+  }).join("");
   const inner=won
       ?'<div class="r-title gold">'+(m.walkover?"DU GEWINNST!":"DU HAST DEN POT! 🏆")+'</div>'+(m.walkover?'<div class="r-sub" style="margin:6px 0">Alle anderen zu früh gestartet.</div>':"")+'<div class="r-prize">+'+fmtEUR(m.you.won)+'</div>'
       :meDq
@@ -2186,13 +2250,14 @@ function tutClear(){ tutTimers.forEach(clearTimeout); tutTimers=[]; }
 function tutAfter(fn,ms){ tutTimers.push(setTimeout(fn,ms)); }
 function tutAnim(i){
   tutClear();
+  const flash=$("#tt-flash"); flash.className="t-flash"; flash.innerHTML="";
   if(i===0){
-    let pot=115; const potEl=$("#tt-pot"),chip=$("#tt-chip");
+    let pot=120,pl=12; const potEl=$("#tt-pot"),plEl=$("#tt-pl"),chip=$("#tt-chip");
     const step=()=>{ if(tutIdx!==0)return;
-      pot+=5; if(pot>330)pot=115;
-      potEl.textContent=fmtEUR(pot);
-      chip.style.opacity="1"; chip.style.transform="translateY(-40px)";
-      tutAfter(()=>{ chip.style.transition="none"; chip.style.opacity="0"; chip.style.transform="translateY(0)";
+      pot+=10; pl+=1; if(pot>340){pot=120;pl=12;}
+      potEl.textContent=fmtEUR(pot); plEl.textContent=pl;
+      chip.style.opacity="1"; chip.style.transform="translateX(-50%) translateY(-42px)";
+      tutAfter(()=>{ chip.style.transition="none"; chip.style.opacity="0"; chip.style.transform="translateX(-50%)";
         requestAnimationFrame(()=>{ chip.style.transition="opacity .25s, transform .6s ease-out"; }); },650);
       tutAfter(step,900);
     };
@@ -2201,13 +2266,22 @@ function tutAnim(i){
   if(i===1){
     const cd=$("#tt-cd");
     const seq=()=>{ if(tutIdx!==1)return;
-      cd.style.color="var(--text)"; let n=3;
+      flash.className="t-flash"; flash.innerHTML="";
+      cd.style.color="var(--text)"; let n=5;
       const tick=()=>{ if(tutIdx!==1)return;
-        if(n>0){ cd.textContent="0:0"+n; n--; tutAfter(tick,700); }
+        if(n>0){ cd.textContent="0:0"+n; if(n<=3)cd.style.color="var(--red)"; n--; tutAfter(tick,750); }
         else{ cd.textContent="0:00";
           tutAfter(()=>{ if(tutIdx!==1)return; cd.textContent="• • •"; cd.style.color="var(--muted)";
-            tutAfter(()=>{ if(tutIdx!==1)return; cd.textContent="GO!"; cd.style.color="var(--green)"; tutAfter(seq,1300); },1200+Math.random()*1400);
-          },700);
+            tutAfter(()=>{ if(tutIdx!==1)return;
+              // GANZER Screen wird grün — wie im Spiel
+              flash.className="t-flash on green"; flash.innerHTML='<div class="f-go">GO!</div>';
+              tutAfter(()=>{ if(tutIdx!==1)return;
+                flash.className="t-flash on black";
+                flash.innerHTML='<div class="f-ey">Deine Zeit</div><div class="f-ms">241,73 ms</div>';
+                tutAfter(()=>{ if(tutIdx!==1)return; flash.className="t-flash"; flash.innerHTML=""; tutAfter(seq,600); },1500);
+              },900);
+            },1100+Math.random()*1500);
+          },750);
         }
       };
       tick();
@@ -2215,14 +2289,22 @@ function tutAnim(i){
     seq();
   }
   if(i===2){
-    const go=$("#tt-go"),ms=$("#tt-ms"),win=$("#tt-win");
+    const board=$("#tt-board");
+    const me=(S.profile&&S.profile.name)?S.profile.name:"Du";
+    const rows=[
+      {rank:1,name:me+" (Du)",ms:"241,73 ms",pz:"+245 €",gold:true},
+      {rank:2,name:"Vexx",ms:"262,10 ms"},
+      {rank:3,name:"luna.exe",ms:"274,88 ms"},
+      {rank:4,name:"Kira",ms:"291,42 ms"}
+    ];
+    board.innerHTML='<div class="t-board"><div class="b-title">DU HAST DEN POT!</div><div class="b-prize" id="tb-prize">+245 €</div>'+
+      rows.map(r=>'<div class="pr'+(r.gold?" goldbox":"")+'"><span class="rk">'+r.rank+'.</span><span class="nm">'+esc(r.name)+'</span><span class="tm">'+r.ms+"</span>"+(r.pz?'<span class="pz">'+r.pz+"</span>":"")+"</div>").join("")+"</div>";
     const seq=()=>{ if(tutIdx!==2)return;
-      go.classList.remove("green"); go.textContent="…"; ms.style.opacity="0"; win.style.opacity="0"; win.style.transform="scale(.6)";
-      tutAfter(()=>{ if(tutIdx!==2)return; go.classList.add("green"); go.textContent="GO!";
-        tutAfter(()=>{ if(tutIdx!==2)return; ms.style.opacity="1";
-          tutAfter(()=>{ if(tutIdx!==2)return; win.style.opacity="1"; win.style.transform="scale(1)"; tutAfter(seq,1900); },400);
-        },500);
-      },900);
+      const prs=board.querySelectorAll(".pr"),prize=$("#tb-prize");
+      prize.classList.remove("on"); prs.forEach(p=>p.classList.remove("show"));
+      tutAfter(()=>{ if(tutIdx!==2)return; prize.classList.add("on"); },250);
+      prs.forEach((p,k)=>tutAfter(()=>{ if(tutIdx===2)p.classList.add("show"); },450+k*220));
+      tutAfter(seq,4600);
     };
     seq();
   }
@@ -2236,7 +2318,7 @@ function tutShow(i){
   tutAnim(i);
 }
 function openTut(){ tutEl.classList.add("on"); tutShow(0); }
-function closeTut(){ tutClear(); tutIdx=-1; tutEl.classList.remove("on"); S.tutSeen=true; save(); }
+function closeTut(){ tutClear(); tutIdx=-1; tutEl.classList.remove("on"); const f=$("#tt-flash"); f.className="t-flash"; f.innerHTML=""; S.tutSeen=true; save(); }
 $("#tut-next").addEventListener("click",()=>{ tutIdx===2?closeTut():tutShow(tutIdx+1); });
 $("#tut-back").addEventListener("click",()=>{ if(tutIdx>0)tutShow(tutIdx-1); });
 $("#tut-skip").addEventListener("click",closeTut);
