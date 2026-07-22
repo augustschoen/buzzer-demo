@@ -138,12 +138,68 @@ async function sendMail(to,subject,text){
 }
 const EMAIL_RE=/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
 
-/* ---------- Persistenz ---------- */
+/* ---------- Persistenz: Postgres (Neon) mit data.json als Fallback ---------- */
 let DB={users:{}};
 try{ DB=JSON.parse(fs.readFileSync(DATA_FILE,"utf8")); if(!DB.users)DB.users={}; }catch(e){}
+
+let PGPOOL=null;
+(function(){
+  let dburl=process.env.DATABASE_URL;
+  if(!dburl){ try{ dburl=JSON.parse(fs.readFileSync(path.join(__dirname,"db-config.json"),"utf8")).url; }catch(e){} }
+  if(!dburl){ console.log("Keine DATABASE_URL — Konten nur in data.json (auf Render flüchtig!)"); return; }
+  const {Pool}=require("pg");
+  PGPOOL=new Pool({connectionString:dburl,max:5,ssl:{rejectUnauthorized:false}});
+  PGPOOL.on("error",e=>console.error("pg pool:",e.message));
+})();
+
+async function dbInit(){
+  if(!PGPOOL)return;
+  await PGPOOL.query(`CREATE TABLE IF NOT EXISTS users(
+    token TEXT PRIMARY KEY, name TEXT, email TEXT,
+    balance DOUBLE PRECISION NOT NULL DEFAULT 0,
+    marketing BOOLEAN NOT NULL DEFAULT false,
+    stats JSONB NOT NULL DEFAULT '{}'::jsonb, day JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(), last_seen TIMESTAMPTZ NOT NULL DEFAULT now())`);
+  await PGPOOL.query(`CREATE TABLE IF NOT EXISTS events(
+    id BIGSERIAL PRIMARY KEY, token TEXT, type TEXT NOT NULL,
+    amount DOUBLE PRECISION, meta JSONB, at TIMESTAMPTZ NOT NULL DEFAULT now())`);
+  await PGPOOL.query(`CREATE INDEX IF NOT EXISTS ev_token_at ON events(token, at DESC)`);
+  await PGPOOL.query(`CREATE INDEX IF NOT EXISTS ev_type_at ON events(type, at DESC)`);
+  const r=await PGPOOL.query("SELECT token,name,email,balance,marketing,stats,day,created_at,last_seen FROM users");
+  for(const row of r.rows){
+    DB.users[row.token]={name:row.name,email:row.email||undefined,balance:+row.balance,marketing:row.marketing,
+      createdAt:+new Date(row.created_at),lastSeen:+new Date(row.last_seen),
+      stats:(row.stats&&row.stats.plays!=null)?row.stats:{plays:0,wins:0,net:0,best:null},
+      day:(row.day&&row.day.k)?row.day:{k:dayKey(),best:null,won:0,bets:0}};
+  }
+  console.log("Postgres verbunden — "+r.rows.length+" Konten geladen");
+}
+
+function logEvent(token,type,amount,meta){ // Ereignis-Protokoll: jede Aktion mit Zeitstempel
+  if(!PGPOOL)return;
+  PGPOOL.query("INSERT INTO events(token,type,amount,meta) VALUES($1,$2,$3,$4)",
+    [token,type,amount==null?null:amount,meta?JSON.stringify(meta):null])
+    .catch(e=>console.error("pg event:",e.message));
+}
+
 let dirty=false;
 function save(){ dirty=true; }
-setInterval(()=>{ if(!dirty)return; dirty=false; try{ fs.writeFileSync(DATA_FILE,JSON.stringify(DB)); }catch(e){ console.error("save:",e.message); } },5000);
+setInterval(()=>{
+  if(!dirty)return; dirty=false;
+  try{ fs.writeFileSync(DATA_FILE,JSON.stringify(DB)); }catch(e){ console.error("save:",e.message); }
+  if(PGPOOL){
+    (async()=>{
+      for(const tok of Object.keys(DB.users)){
+        const u=DB.users[tok];
+        await PGPOOL.query(`INSERT INTO users(token,name,email,balance,marketing,stats,day,created_at,last_seen)
+          VALUES($1,$2,$3,$4,$5,$6,$7,to_timestamp($8/1000.0),to_timestamp($9/1000.0))
+          ON CONFLICT(token) DO UPDATE SET name=$2,email=$3,balance=$4,marketing=$5,stats=$6,day=$7,last_seen=to_timestamp($9/1000.0)`,
+          [tok,u.name,u.email||null,u.balance,!!u.marketing,JSON.stringify(u.stats||{}),JSON.stringify(u.day||{}),
+           u.createdAt||Date.now(),u.lastSeen||Date.now()]).catch(e=>console.error("pg upsert:",e.message));
+      }
+    })();
+  }
+},5000);
 process.on("SIGINT",()=>{ try{ fs.writeFileSync(DATA_FILE,JSON.stringify(DB)); }catch(e){} process.exit(0); });
 
 function dayKey(){ const d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
@@ -209,6 +265,7 @@ function resolvePublic(i,T){
     }
     u.stats.plays++; u.day.bets++;
     if(prize>0){ u.balance+=prize; u.stats.net+=prize; u.day.won+=prize; if(rank===1)u.stats.wins++; }
+    logEvent(r.token,"round_result",prize,{i,key,stake,rank,ms:r.ms,mode,playersTotal});
     results.push({token:r.token,rank,prize,ms:r.ms});
   }
   save();
@@ -266,7 +323,10 @@ function resolveLobby(L){
   }else{
     for(const w of winners){ const u=userOf(w.token); if(u){ u.balance+=share; u.stats.wins++; ensureDay(u); u.day.won+=share; } }
   }
-  for(const m of L.members){ const u=userOf(m.token); if(u){ u.stats.plays++; ensureDay(u); u.day.bets++; if(!dq(m.token)&&typeof L.taps[m.token]==="number"){ const ms=Math.max(MINMS,L.taps[m.token]); if(u.day.best==null||ms<u.day.best)u.day.best=ms; if(u.stats.best==null||ms<u.stats.best)u.stats.best=ms; } } }
+  for(const m of L.members){ const u=userOf(m.token); if(u){ u.stats.plays++; ensureDay(u); u.day.bets++; if(!dq(m.token)&&typeof L.taps[m.token]==="number"){ const ms=Math.max(MINMS,L.taps[m.token]); if(u.day.best==null||ms<u.day.best)u.day.best=ms; if(u.stats.best==null||ms<u.stats.best)u.stats.best=ms; }
+    const won=winners.some(w=>w.token===m.token)?share:0;
+    logEvent(m.token,"priv_result",voided?L.stake:won,{code:L.code,stake:L.stake,ms:(!dq(m.token)&&typeof L.taps[m.token]==="number")?Math.max(MINMS,L.taps[m.token]):null,dq:dq(m.token),voided,walkover});
+  } }
   save();
   const winnerInfo=winners.length?{name:winners.map(w=>w.name).join(" & "),ms:winners[0].ms}:null;
   for(const c of conns){
@@ -289,11 +349,22 @@ function handleMsg(c,m){
       let bal=500;
       if(m.token&&typeof m.restore==="number"&&m.restore>=0)bal=Math.min(100000,Math.round(m.restore*100)/100);
       token=crypto.randomUUID();
-      DB.users[token]={name:sanitizeName(m.name),balance:bal,createdAt:t,stats:{plays:0,wins:0,net:0,best:null},day:{k:dayKey(),best:null,won:0,bets:0}};
+      DB.users[token]={name:sanitizeName(m.name),balance:bal,createdAt:t,lastSeen:t,stats:{plays:0,wins:0,net:0,best:null},day:{k:dayKey(),best:null,won:0,bets:0}};
       save();
-    }else if(m.name){ DB.users[token].name=sanitizeName(m.name); save(); }
-    c.token=token; c.name=DB.users[token].name;
-    send(c,{t:"welcome",token,name:c.name,balance:DB.users[token].balance,serverNow:t,build:BUILD,online:[...conns].filter(x=>x.token).length});
+      logEvent(token,m.token?"signup_restore":"signup",bal,{name:DB.users[token].name});
+    }else{
+      if(m.name)DB.users[token].name=sanitizeName(m.name);
+      logEvent(token,"login",null,null);
+    }
+    const usr=DB.users[token];
+    usr.lastSeen=t;
+    if(typeof m.marketing==="boolean"&&!!usr.marketing!==m.marketing){
+      usr.marketing=m.marketing;
+      logEvent(token,"consent_marketing",null,{granted:m.marketing});
+    }
+    save();
+    c.token=token; c.name=usr.name;
+    send(c,{t:"welcome",token,name:c.name,balance:usr.balance,serverNow:t,build:BUILD,online:[...conns].filter(x=>x.token).length});
     return;
   }
   if(!c.token)return;
@@ -325,6 +396,7 @@ function handleMsg(c,m){
     if(mc&&mc.email===email&&mc.code===code&&t<mc.exp){
       delete u.mailCode;
       u.email=email; save(); // verifizierte E-Mail am Konto speichern
+      logEvent(c.token,"email_verified",null,{email});
       send(c,{t:"emailok"});
     }else send(c,{t:"emailbad"});
     return;
@@ -341,6 +413,7 @@ function handleMsg(c,m){
     if(u.balance<stake){ send(c,{t:"betfail",key:T.key,reason:"balance"}); return; }
     u.balance-=stake; u.stats.net-=stake; save();
     bets.set(c.token,{ms:null});
+    logEvent(c.token,"bet_placed",stake,{i,key:T.key});
     send(c,{t:"betok",key:T.key,i,balance:u.balance});
     broadcast({t:"join",i,key:T.key,name:u.name,amt:stake,real:betsFor(T.key).size});
     return;
@@ -365,6 +438,7 @@ function handleMsg(c,m){
   if(m.t==="topup"){
     const amt=Math.min(1000,Math.max(1,m.amt|0));
     u.balance+=amt; save();
+    logEvent(c.token,"topup",amt,{balanceAfter:u.balance});
     send(c,{t:"balance",balance:u.balance,topup:amt});
     return;
   }
@@ -374,6 +448,7 @@ function handleMsg(c,m){
     const code=makeCode();
     // Einsatz wird erst beim START eingezogen → Lobby kann mehrere Runden laufen
     lobbies[code]={code,stake,creator:c.token,creatorName:u.name,members:[{token:c.token,name:u.name}],createdAt:t,lastActive:t,startAt:null,goAt:null,goSent:false,taps:{},dq:{},resolved:false,round:0};
+    logEvent(c.token,"priv_created",stake,{code});
     send(c,lobbyState(lobbies[code]));
     return;
   }
@@ -384,6 +459,7 @@ function handleMsg(c,m){
     if(L.members.some(x=>x.token===c.token)){ send(c,lobbyState(L)); return; }
     if(L.members.length>=12){ send(c,{t:"privfail",reason:"full"}); return; }
     L.members.push({token:c.token,name:u.name}); L.lastActive=t;
+    logEvent(c.token,"priv_joined",null,{code:L.code,stake:L.stake});
     send(c,lobbyState(L));            // dem Beitretenden direkt die Lobby zeigen
     lobbyCast(L,lobbyState(L));
     lobbyCast(L,{t:"privchat",code:L.code,name:u.name,join:true});
@@ -402,7 +478,7 @@ function handleMsg(c,m){
     // Einsatz JETZT von allen einziehen; wer nicht zahlen kann, fliegt für diese Lobby raus
     const paid=[];
     for(const mem of L.members){ const mu=userOf(mem.token);
-      if(mu&&mu.balance>=L.stake){ mu.balance-=L.stake; paid.push(mem); const cc=connOf(mem.token); if(cc)send(cc,{t:"balance",balance:mu.balance}); }
+      if(mu&&mu.balance>=L.stake){ mu.balance-=L.stake; paid.push(mem); logEvent(mem.token,"priv_stake",L.stake,{code:L.code,round:(L.round||0)+1}); const cc=connOf(mem.token); if(cc)send(cc,{t:"balance",balance:mu.balance}); }
       else { const cc=connOf(mem.token); if(cc)send(cc,{t:"privfail",reason:"balance"}); }
     }
     L.members=paid; save();
@@ -458,7 +534,7 @@ const server=http.createServer((req,res)=>{
   const url=(req.url||"/").split("?")[0];
   if(url==="/api/info"){
     res.writeHead(200,{"Content-Type":"application/json","Access-Control-Allow-Origin":"*"});
-    res.end(JSON.stringify({buzzer:true,build:BUILD,serverNow:now(),online:[...conns].filter(x=>x.token).length,mail:!!(MAIL&&MAIL.apiKey),mailFrom:MAIL?MAIL.from:null}));
+    res.end(JSON.stringify({buzzer:true,build:BUILD,serverNow:now(),online:[...conns].filter(x=>x.token).length,mail:!!(MAIL&&MAIL.apiKey),mailFrom:MAIL?MAIL.from:null,db:!!PGPOOL}));
     return;
   }
   if(url==="/"||url==="/index.html"){
@@ -503,4 +579,7 @@ wss.on("connection",ws=>{
   ws.on("error",()=>conns.delete(c));
 });
 
-server.listen(PORT,()=>console.log("BUZZER-Server läuft auf Port "+PORT+" ("+BUILD+")"));
+(async()=>{
+  try{ await dbInit(); }catch(e){ console.error("DB-Init fehlgeschlagen (weiter mit data.json):",e.message); }
+  server.listen(PORT,()=>console.log("BUZZER-Server läuft auf Port "+PORT+" ("+BUILD+")"+(PGPOOL?" · Postgres aktiv":"")));
+})();

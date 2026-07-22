@@ -4,6 +4,9 @@ server/data.json
 # Mail-Zugangsdaten (API-Key) — niemals committen
 server/mail-config.json
 
+# Datenbank-Zugang (Neon) — niemals committen
+server/db-config.json
+
 # Abhängigkeiten
 server/node_modules/
 

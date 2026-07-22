@@ -491,6 +491,7 @@ input{font:inherit;color:inherit}
     <input type="text" id="onb-name" maxlength="16" placeholder="Username" autocomplete="off">
     <input type="email" id="onb-email" placeholder="E-Mail-Adresse" autocomplete="off" inputmode="email">
     <label class="o-check"><input type="checkbox" id="onb-terms"><span>Ich akzeptiere die Nutzungsbedingungen und Datenschutzerklärung.</span></label>
+    <label class="o-check" style="margin-top:-8px"><input type="checkbox" id="onb-mkt"><span>News &amp; Aktionen per E-Mail (optional)</span></label>
     <button class="o-cta" id="onb-next1" disabled>Weiter</button>
   </div>
 
@@ -635,7 +636,7 @@ function netConnect(){
   const url=wsUrl(); if(!url)return;
   let ws; try{ ws=new WebSocket(url); }catch(e){ return; }
   NET.ws=ws;
-  ws.onopen=()=>{ NET.tries=0; netSend({t:"hello",token:netToken(),name:S.profile?S.profile.name:null,restore:(netToken()&&S.profile)?S.balance:undefined}); };
+  ws.onopen=()=>{ NET.tries=0; netSend({t:"hello",token:netToken(),name:S.profile?S.profile.name:null,restore:(netToken()&&S.profile)?S.balance:undefined,marketing:(S.profile&&typeof S.profile.marketing==="boolean")?S.profile.marketing:undefined}); };
   ws.onmessage=e=>{ let m; try{m=JSON.parse(e.data);}catch(_){ return; } try{ netHandle(m); }catch(err){} };
   ws.onclose=()=>{ NET.on=false; updateNetPill(); NET.tries++; setTimeout(netConnect,Math.min(8000,800*NET.tries+400)); };
   ws.onerror=()=>{ try{ws.close();}catch(_){} };
@@ -2272,11 +2273,11 @@ function initOnboarding(){
   });
   $("#onb-go").addEventListener("click",()=>{
     if(!idOk)return;
-    S.profile={name:$("#onb-name").value.trim().slice(0,16),email:$("#onb-email").value.trim(),ageOk:true,termsOk:true};
+    S.profile={name:$("#onb-name").value.trim().slice(0,16),email:$("#onb-email").value.trim(),ageOk:true,termsOk:true,marketing:$("#onb-mkt").checked};
     if(!NET.on)S.balance=500;
     save(); syncMoney();
     onb.classList.remove("on");
-    if(NET.on)netSend({t:"hello",token:netToken(),name:S.profile.name}); // Namen am Server setzen
+    if(NET.on)netSend({t:"hello",token:netToken(),name:S.profile.name,marketing:S.profile.marketing}); // Name + Werbe-Einwilligung am Server setzen
     toast("Willkommen, "+S.profile.name+"!");
     if(!S.tutSeen)openTut();
     handleDeepLink();
