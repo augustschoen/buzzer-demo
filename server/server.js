@@ -20,7 +20,7 @@ const {WebSocketServer}=require("ws");
 const PORT=process.env.PORT||8787;
 const APP_FILE=path.join(__dirname,"..","index.html");
 const DATA_FILE=path.join(__dirname,"data.json");
-const BUILD="phase1-v2";
+const BUILD="phase1-v3";
 
 /* ---------- Engine-Konstanten (identisch zum Client!) ---------- */
 const STAKES=[1,3,5,10,20,50,75,100,200,300,400,500,600,700,800,900,1000,10000,20000];
