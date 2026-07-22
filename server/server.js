@@ -392,6 +392,13 @@ function handleMsg(c,m){
   if(m.t==="privstart"){
     const L=lobbyOfToken(c.token);
     if(!L||L.creator!==c.token||L.startAt)return;
+    // Kollision: Ersteller hat gleich eine andere Runde (öffentlicher Einsatz mit GO in <45 s)
+    for(const [key,bets] of roundBets){
+      if(!bets.has(c.token))continue;
+      const bi=parseInt(key.split(":")[0],10);
+      const T=times(bi,t);
+      if(T&&T.key===key){ const d=T.tGo-t; if(d>-5000&&d<45000){ send(c,{t:"privfail",reason:"busy"}); return; } }
+    }
     // Einsatz JETZT von allen einziehen; wer nicht zahlen kann, fliegt für diese Lobby raus
     const paid=[];
     for(const mem of L.members){ const mu=userOf(mem.token);

@@ -698,7 +698,7 @@ function netHandle(m){
       else if(m.name!==(S.profile&&S.profile.name))pushChat(PRIV,{type:"user",name:m.name,text:m.text});
       break;
     case "privfail":
-      toast(m.reason==="notfound"?"Lobby nicht gefunden":m.reason==="started"?"Runde läuft schon":m.reason==="balance"?"Nicht genug Guthaben":m.reason==="full"?"Lobby ist voll":"Geht gerade nicht");
+      toast(m.reason==="notfound"?"Lobby nicht gefunden":m.reason==="started"?"Runde läuft schon":m.reason==="balance"?"Nicht genug Guthaben":m.reason==="full"?"Lobby ist voll":m.reason==="busy"?"Du bist gleich in einer anderen Runde":"Geht gerade nicht");
       break;
     case "emailsent": if(window.onbMailSent)onbMailSent(m); break;
     case "emailok": if(window.onbMailOk)onbMailOk(true); break;
@@ -1016,7 +1016,8 @@ function onPhase(i,T){
 
 /* ---------- Takeover / Overlay ---------- */
 function checkTakeover(t){
-  if(engaged)return;
+  if(PV.active)return;                                  // private Runde läuft gerade — nicht dazwischenfunken
+  if(engaged&&engaged.state!=="result")return;          // Ergebnis-Screen darf von der nächsten Runde abgelöst werden
   for(const key of Object.keys(S.bets)){
     const bet=S.bets[key]; if(bet.done)continue;
     const [i,c]=key.split(":").map(Number);
@@ -1030,6 +1031,8 @@ function checkTakeover(t){
     }
     const soon=(T.phase==="open"&&T.tClose-t<8000)||(isRnd(i)&&T.phase==="open"); // Random: sofort in Bereitschaft
     if(soon||T.phase==="locked"||T.phase==="countdown"||T.phase==="suspense"||T.phase==="live"){
+      if(engaged&&engaged.key===key)return;   // dieselbe Runde zeigt schon ihr Ergebnis
+      if(engaged)closeOverlay();              // altes Ergebnis weicht dem neuen Countdown
       engage(i,T); return;
     }
   }
@@ -1597,7 +1600,17 @@ function renderPrivLive(){
       : '')+
     chatBlock("pv","Gruppen-Chat");
   $("#pv-back").addEventListener("click",()=>navigate("menu"));
-  if($("#pv-start"))$("#pv-start").addEventListener("click",()=>netSend({t:"privstart"}));
+  if($("#pv-start"))$("#pv-start").addEventListener("click",()=>{
+    // Nicht starten, wenn gleich eine andere Runde von dir losgeht
+    const t=now();
+    for(const key of Object.keys(S.bets)){
+      const b=S.bets[key]; if(b.done)continue;
+      const [bi]=key.split(":").map(Number);
+      const T=times(bi,t);
+      if(T&&T.key===key){ const d=T.tGo-t; if(d>-5000&&d<45000){ toast("Du bist gleich in einer anderen Runde"); return; } }
+    }
+    netSend({t:"privstart"});
+  });
   if($("#pv-cancel"))$("#pv-cancel").addEventListener("click",()=>netSend({t:"privcancel"}));
   if($("#pv-share"))$("#pv-share").addEventListener("click",()=>{
     const link=inviteLink(L.code);
@@ -1615,7 +1628,7 @@ function updatePrivLive(t){
 function pvTick(t){ // global — öffnet & aktualisiert das Bereitschafts-Overlay, egal auf welcher Seite man ist
   const L=NET.lobby; if(!L||!L.startAt||PV.done||PV.false)return;
   const d=L.startAt-t;
-  if(!PV.active&&d<=15000&&d>-8000)pvOpenOverlay();
+  if(!PV.active&&!engaged&&d<=15000&&d>-8000)pvOpenOverlay(); // laufende normale Runde nicht überdecken
   if(PV.active&&!ovEl.classList.contains("go-bg")){
     const big=$("#pv-ov-big"),sub=$("#pv-ov-sub");
     if(big){
@@ -1910,6 +1923,7 @@ function tryBet(i){
     else toast("Einsätze sind zu — nächste Runde in "+mmss(T.end-t));
     return;
   }
+  if(NET.lobby&&NET.lobby.startAt){ toast("Dein privater Buzzer läuft gleich"); return; }
   if(S.balance<s){ toast("Nicht genug Guthaben — lad kurz auf"); openTopup(); return; }
   if(NET.on){
     // Server ist die Kasse — Einsatz dort platzieren, Bestätigung kommt per 'betok'

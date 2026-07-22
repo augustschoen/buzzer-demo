@@ -69,6 +69,14 @@ Fehlstart-Disqualifikation verhindern Vorab-Tippen.
 - Bewiesen: zwei getrennte Clients in einer Lobby, GO an beide, zentrale Wertung, korrekte
   Auszahlung, Guthaben überlebt Reload.
 
+## Kollisions-Regeln (16.07.)
+
+- **Privat-START gesperrt**, wenn der Ersteller einen laufenden öffentlichen Einsatz mit GO in
+  <45 s hat (Client-Toast + Server lehnt mit `busy` ab).
+- **Öffentliche Einsätze gesperrt**, solange die eigene private Runde gestartet ist (startAt gesetzt).
+- **Ergebnis-Screen weicht automatisch** dem Countdown der nächsten eigenen Runde (checkTakeover
+  löst bei `state==="result"` ab); private Live-Runde (PV.active) wird nie überdeckt.
+
 ## Guthaben-Persistenz (wichtig!)
 
 - Render Free-Tier hat **flüchtigen Speicher**: `server/data.json` (Konten+Guthaben) wird bei
