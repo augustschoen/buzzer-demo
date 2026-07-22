@@ -69,10 +69,14 @@ Fehlstart-Disqualifikation verhindern Vorab-Tippen.
 - Bewiesen: zwei getrennte Clients in einer Lobby, GO an beide, zentrale Wertung, korrekte
   Auszahlung, Guthaben überlebt Reload.
 
-## Kollisions-Regeln (16.07.)
+## Kollisions-Regeln (16.07., erweitert 23.07.)
 
 - **Privat-START gesperrt**, wenn der Ersteller einen laufenden öffentlichen Einsatz mit GO in
   <45 s hat (Client-Toast + Server lehnt mit `busy` ab).
+- **Random-Einsatz gesperrt**, wenn eigene Runde in <150 s startet (Random blockiert den Screen
+  bis zu ~2,5 min). **Privat erstellen/beitreten gesperrt** bei eigener Runde in <90 s (auch Deep-Link).
+  Meldung mit Live-Countdown: „Deine X €-Runde startet in m:ss — danach geht's hier rein."
+  (rot, inline im Random- und Privat-Screen via ownRoundSoon/conflictMsg + Toast beim Klick).
 - **Öffentliche Einsätze gesperrt**, solange die eigene private Runde gestartet ist (startAt gesetzt).
 - **Ergebnis-Screen weicht automatisch** dem Countdown der nächsten eigenen Runde (checkTakeover
   löst bei `state==="result"` ab); private Live-Runde (PV.active) wird nie überdeckt.
