@@ -336,6 +336,30 @@ input{font:inherit;color:inherit}
 #onb .o-fine{position:absolute;bottom:calc(24px + var(--sab));font-size:10.5px;color:var(--muted2);text-align:center;line-height:1.6;max-width:340px;padding:0 20px}
 #onb .o-back{margin-top:14px;font-size:12px;color:var(--muted2);font-weight:600}
 
+/* ---------- Tutorial (3 Schritte) ---------- */
+#tut{position:fixed;inset:0;z-index:95;background:#000;display:none;flex-direction:column;padding:calc(18px + var(--sat)) 24px calc(22px + var(--sab))}
+#tut.on{display:flex}
+#tut .t-skip{position:absolute;top:calc(16px + var(--sat));right:18px;background:none;border:none;color:var(--muted2);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer}
+#tut .t-stage{flex:1;display:flex;align-items:center;justify-content:center;text-align:center}
+#tut .t-slide{display:none;width:min(100%,400px)}
+#tut .t-slide.on{display:block}
+#tut .t-anim{height:210px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:30px;position:relative}
+#tut h2{font-size:24px;font-weight:900;letter-spacing:-.5px;margin-bottom:10px}
+#tut .t-p{font-size:14px;color:var(--muted);font-weight:600;line-height:1.65}
+#tut .t-nav{display:flex;align-items:center;gap:12px}
+#tut .t-dots{display:flex;gap:7px;flex:1;justify-content:center}
+#tut .t-dot{width:7px;height:7px;background:var(--line);border-radius:50%!important}
+#tut .t-dot.on{background:var(--violet)}
+#tut .t-btn{padding:14px 22px;background:var(--violet-dim);color:#fff;border:none;font-weight:800;font-size:14.5px;font-family:inherit;min-width:112px}
+#tut .t-btn.ghost{background:none;border:1px solid var(--line);color:var(--muted);min-width:0}
+#tut .t-big{font-size:58px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-2px;transition:color .2s}
+#tut .t-circle{width:132px;height:132px;border-radius:50%!important;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;background:radial-gradient(circle at 36% 30%, #8A6FD1 0%, #5A4499 52%, #2E2257 100%);box-shadow:0 14px 30px rgba(0,0,0,.7);transition:background .25s}
+#tut .t-circle.green{background:radial-gradient(circle at 36% 30%, #58A981 0%, #3B7E5D 55%, #1C4433 100%)}
+#tut .t-pot{font-size:46px;font-weight:900;color:var(--gold);font-variant-numeric:tabular-nums;letter-spacing:-1px}
+#tut .t-chip{position:absolute;top:56%;font-weight:800;color:var(--green);font-size:16px;opacity:0;transition:opacity .25s, transform .6s ease-out}
+#tut .t-ms{font-size:15px;font-weight:800;margin-top:14px;font-variant-numeric:tabular-nums;opacity:0;transition:opacity .3s}
+#tut .t-win{font-size:36px;font-weight:900;color:var(--gold);margin-top:6px;opacity:0;transform:scale(.6);transition:all .35s}
+
 /* ---------- toast / confetti ---------- */
 #toast{position:fixed;left:50%;bottom:calc(34px + var(--sab));transform:translateX(-50%) translateY(16px);z-index:110;
   background:#0D0C11;border:1px solid var(--line);color:var(--text);font-size:13.5px;font-weight:700;
@@ -453,7 +477,30 @@ input{font:inherit;color:inherit}
     <button class="o-cta" id="onb-go" disabled>Los geht's — 500 € Demo-Guthaben</button>
   </div>
 
-  <div class="o-fine">Demo-Version: Kein echtes Geld, alle Mitspieler simuliert. E-Mail- und Ausweis-Prüfung sind hier nur angedeutet.</div>
+  <div class="o-fine">Spielgeld-Version — kein echtes Geld.</div>
+</div>
+
+<div id="tut">
+  <button class="t-skip" id="tut-skip">Überspringen</button>
+  <div class="t-stage">
+    <div class="t-slide on">
+      <div class="t-anim"><div class="t-pot" id="tt-pot">120 €</div><div class="t-chip" id="tt-chip">+5 €</div><div style="font-size:11px;letter-spacing:2px;color:var(--muted2);font-weight:800;margin-top:8px">POT</div></div>
+      <h2>Einsatz rein</h2><div class="t-p">Alle zahlen ein. Der Pot wächst.</div>
+    </div>
+    <div class="t-slide">
+      <div class="t-anim"><div class="t-big" id="tt-cd">0:03</div></div>
+      <h2>Warte auf Grün</h2><div class="t-p">Timer auf null — Grün kommt kurz danach.<br>Zu früh getippt = raus.</div>
+    </div>
+    <div class="t-slide">
+      <div class="t-anim"><div class="t-circle" id="tt-go">…</div><div class="t-ms" id="tt-ms">163,42 ms</div><div class="t-win" id="tt-win">+245 €</div></div>
+      <h2>Schnellster gewinnt</h2><div class="t-p">Ein Tipp — der ganze Pot gehört dir.</div>
+    </div>
+  </div>
+  <div class="t-nav">
+    <button class="t-btn ghost" id="tut-back">Zurück</button>
+    <div class="t-dots"><span class="t-dot on"></span><span class="t-dot"></span><span class="t-dot"></span></div>
+    <button class="t-btn" id="tut-next">Weiter</button>
+  </div>
 </div>
 
 <div id="dim" class="dim"></div>
@@ -2126,10 +2173,77 @@ function initOnboarding(){
     onb.classList.remove("on");
     if(NET.on)netSend({t:"hello",token:netToken(),name:S.profile.name}); // Namen am Server setzen
     toast("Willkommen, "+S.profile.name+"!");
+    if(!S.tutSeen)openTut();
     handleDeepLink();
   });
   step(1);
 }
+
+/* ---------- Tutorial (3 Schritte) ---------- */
+let tutIdx=-1,tutTimers=[];
+const tutEl=$("#tut");
+function tutClear(){ tutTimers.forEach(clearTimeout); tutTimers=[]; }
+function tutAfter(fn,ms){ tutTimers.push(setTimeout(fn,ms)); }
+function tutAnim(i){
+  tutClear();
+  if(i===0){
+    let pot=115; const potEl=$("#tt-pot"),chip=$("#tt-chip");
+    const step=()=>{ if(tutIdx!==0)return;
+      pot+=5; if(pot>330)pot=115;
+      potEl.textContent=fmtEUR(pot);
+      chip.style.opacity="1"; chip.style.transform="translateY(-40px)";
+      tutAfter(()=>{ chip.style.transition="none"; chip.style.opacity="0"; chip.style.transform="translateY(0)";
+        requestAnimationFrame(()=>{ chip.style.transition="opacity .25s, transform .6s ease-out"; }); },650);
+      tutAfter(step,900);
+    };
+    step();
+  }
+  if(i===1){
+    const cd=$("#tt-cd");
+    const seq=()=>{ if(tutIdx!==1)return;
+      cd.style.color="var(--text)"; let n=3;
+      const tick=()=>{ if(tutIdx!==1)return;
+        if(n>0){ cd.textContent="0:0"+n; n--; tutAfter(tick,700); }
+        else{ cd.textContent="0:00";
+          tutAfter(()=>{ if(tutIdx!==1)return; cd.textContent="• • •"; cd.style.color="var(--muted)";
+            tutAfter(()=>{ if(tutIdx!==1)return; cd.textContent="GO!"; cd.style.color="var(--green)"; tutAfter(seq,1300); },1200+Math.random()*1400);
+          },700);
+        }
+      };
+      tick();
+    };
+    seq();
+  }
+  if(i===2){
+    const go=$("#tt-go"),ms=$("#tt-ms"),win=$("#tt-win");
+    const seq=()=>{ if(tutIdx!==2)return;
+      go.classList.remove("green"); go.textContent="…"; ms.style.opacity="0"; win.style.opacity="0"; win.style.transform="scale(.6)";
+      tutAfter(()=>{ if(tutIdx!==2)return; go.classList.add("green"); go.textContent="GO!";
+        tutAfter(()=>{ if(tutIdx!==2)return; ms.style.opacity="1";
+          tutAfter(()=>{ if(tutIdx!==2)return; win.style.opacity="1"; win.style.transform="scale(1)"; tutAfter(seq,1900); },400);
+        },500);
+      },900);
+    };
+    seq();
+  }
+}
+function tutShow(i){
+  tutIdx=i;
+  document.querySelectorAll("#tut .t-slide").forEach((s,k)=>s.classList.toggle("on",k===i));
+  document.querySelectorAll("#tut .t-dot").forEach((d,k)=>d.classList.toggle("on",k===i));
+  $("#tut-back").style.visibility=i===0?"hidden":"visible";
+  $("#tut-next").textContent=i===2?"Los geht's":"Weiter";
+  tutAnim(i);
+}
+function openTut(){ tutEl.classList.add("on"); tutShow(0); }
+function closeTut(){ tutClear(); tutIdx=-1; tutEl.classList.remove("on"); S.tutSeen=true; save(); }
+$("#tut-next").addEventListener("click",()=>{ tutIdx===2?closeTut():tutShow(tutIdx+1); });
+$("#tut-back").addEventListener("click",()=>{ if(tutIdx>0)tutShow(tutIdx-1); });
+$("#tut-skip").addEventListener("click",closeTut);
+let tutTX=null;
+tutEl.addEventListener("touchstart",e=>{ tutTX=e.touches[0].clientX; },{passive:true});
+tutEl.addEventListener("touchend",e=>{ if(tutTX==null)return; const dx=e.changedTouches[0].clientX-tutTX; tutTX=null;
+  if(dx<-40){ tutIdx===2?closeTut():tutShow(tutIdx+1); } else if(dx>40&&tutIdx>0)tutShow(tutIdx-1); });
 
 /* ---------- Feed vorwärmen ---------- */
 function seedFeed(){
@@ -2205,6 +2319,7 @@ seedFeed();
 renderFeed();
 syncMoney();
 initOnboarding();
+if(S.profile&&!S.tutSeen)openTut(); // Bestandsnutzer sehen das Tutorial einmalig
 netConnect();
 if("serviceWorker" in navigator&&location.protocol!=="file:"){ try{ navigator.serviceWorker.register("sw.js"); }catch(e){} }
 setInterval(tick,250);
